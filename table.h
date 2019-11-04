@@ -56,23 +56,22 @@ int  st_table[][TABLE_COLUMNS] = {
 	/* State 10*/  {IS,IS,IS,IS,IS,IS,IS,IS},
 	/* State 11*/  {IS,IS,IS,IS,IS,IS,IS,IS},
 	/* State 12*/  {IS,IS,IS,IS,IS,IS,IS,IS},
-}
+};
 	/* Accepting state table definition */
 	#define ASWR     1  /* accepting state with retract */
 	#define ASNR     3  /* accepting state with no retract */
 	#define NOAS     0  /* not accepting state */
 
-	int as_table[] = {YOUR INITIALIZATION HERE - USE ASWR, ASNR, NOAS };
+	int as_table[] = {NOAS,	NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
 
 /* Accepting action function declarations */
 
-FOR EACH OF YOUR ACCEPTING STATES YOU MUST PROVIDE
-ONE FUNCTION PROTOTYPE.THEY ALL RETURN Token AND TAKE
-ONE ARGUMENT : A string REPRESENTING A TOKEN LEXEME.
-
-Token aa_funcXX(char* lexeme);
-
-Replace XX with the number of the accepting state : 02, 03 and so on.
+Token aa_func02(char* lexeme);
+Token aa_func03(char* lexeme);
+Token aa_func05(char* lexeme);
+Token aa_func08(char* lexeme);
+Token aa_func10(char* lexeme);
+Token aa_func12(char* lexeme);
 
 /* defining a new type: pointer to function (of one char * argument)
    returning Token
@@ -87,14 +86,19 @@ typedef Token(*PTR_AAF)(char* lexeme);
  */
 
 PTR_AAF aa_table[] = {
-
-
-HERE YOU MUST PROVIDE AN INITIALIZATION FOR AN ARRAY OF POINTERS
-TO ACCEPTING FUNCTIONS.THE ARRAY HAS THE SAME SIZE AS as_table[].
-YOU MUST INITIALIZE THE ARRAY ELEMENTS WITH THE CORRESPONDING
-ACCEPTING FUNCTIONS(FOR THE STATES MARKED AS ACCEPTING IN as_table[]).
-THE REST OF THE ELEMENTS MUST BE SET TO NULL.
-
+	/* State 0 */ NULL,
+	/* State 1 */ NULL,
+	/* State 2 */ aa_func02,
+	/* State 3 */ aa_func03,
+	/* State 4 */ NULL,
+	/* State 5 */ aa_func05,
+	/* State 6 */ NULL,
+	/* State 7 */ NULL,
+	/* State 8 */ aa_func08,
+	/* State 9 */ NULL,
+	/* State 10*/ aa_func10,
+	/* State 11*/ NULL,
+	/* State 12*/ aa_func12
 };
 
 /* Keyword lookup table (.AND. and .OR. are not keywords) */
