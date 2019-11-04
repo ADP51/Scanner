@@ -62,7 +62,7 @@ int  st_table[][TABLE_COLUMNS] = {
 	#define ASNR     3  /* accepting state with no retract */
 	#define NOAS     0  /* not accepting state */
 
-	int as_table[] = {NOAS,	NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
+	int as_table[] = { NOAS, NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
 
 /* Accepting action function declarations */
 
