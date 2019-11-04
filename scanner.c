@@ -75,24 +75,70 @@ Token malar_next_token(void) {
 		short lexstart;  /*start offset of a lexeme in the input char buffer (array) */
 		short lexend;    /*end   offset of a lexeme in the input char buffer (array)*/
 
-		DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED
+		/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
 
 			while (1) { /* endless loop broken by token returns it will generate a warning */
-
-				GET THE NEXT SYMBOL FROM THE INPUT BUFFER
 
 					c = b_getc(sc_buf);
 
 
 				/* Part 1: Implementation of token driven scanner */
 				/* every token is possessed by its own dedicated code */
+					  /*  Special case tokens processed separately one by one
+					   *  in the token-driven part of the scanner
+					   *  '=' , ' ' , '(' , ')' , '{' , '}' , == , <> , '>' , '<' , ';',
+					   *  white space
+					   *  !!comment , ',' , ';' , '-' , '+' , '*' , '/', << ,
+					   *  .AND., .OR. , SEOF,
+					   */
 
-				WRITE YOUR CODE FOR PROCESSING THE SPECIAL - CASE TOKENS HERE.
-					COMMENTS ARE PROCESSED HERE ALSO.
-
-					WHAT FOLLOWS IS A PSEUDO CODE.YOU CAN USE switch STATEMENT
-					INSTEAD OF if - else TO PROCESS THE SPECIAL CASES
-					DO NOT FORGET TO COUNT THE PROGRAM LINES
+					switch (c) {
+					case SEOF: 
+						t.code = SEOF_T;
+						break;
+					case ' ':
+						continue; /* If char is whitespace ignore and continue */
+					case '=':
+						c = b_getc(sc_buf); /* get the next char */
+						if (c == '=') { /* If the next char is = then == means relations operator */
+							t.code = REL_OP_T;
+							t.attribute.rel_op = EQ;
+							return t;
+						}
+						b_retract(sc_buf); /* If not == then retract c back onto buffer */
+						t.code = ASS_OP_T; /* set token to assignment operator */
+						return t;
+					case '(':
+						t.code = LPR_T;
+						return t;
+					case ')':
+						t.code = RPR_T;
+						return t;
+					case '{':
+						t.code = LBR_T;
+						return t;
+					case '}':
+						t.code = RBR_T;
+						return t;
+					case '<':
+						c = b_getc(sc_buf);
+						if(c == '>') { /* check for not equal operator */
+							t.code = REL_OP_T;
+							t.attribute.rel_op = NE;
+							return t;
+						}
+						b_retract(sc_buf);
+						t.code = REL_OP_T;
+						t.attribute.rel_op = LT; /* Assign less than attribute */
+						return t;
+					case '>':
+						t.code = REL_OP_T;
+						t.attribute.rel_op = GT;
+						return t;
+					case ';':
+						t.code = EOS_T;
+						return t;
+					}
 
 					NOTE :
 				IF LEXICAL ERROR OR ILLEGAL CHARACTER ARE FOUND THE SCANNER MUST RETURN AN ERROR TOKEN.
