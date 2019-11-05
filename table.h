@@ -34,6 +34,7 @@
    *  .AND., .OR. , SEOF,
    */
 
+#define NL  '\n'
 #define ES  11 /* Error state  with no retract */
 #define ER  12 /* Error state  with retract */
 #define IS -1    /* Inavalid state */
