@@ -174,12 +174,34 @@ Token malar_next_token(void) {
 			t.attribute.arr_op = DIV;
 			return t;
 		}
-	}
 
-	if (isalpha(c) || isdigit(c) || c == '"') {
-		lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
-		state = 0;
 
+		if (isalpha(c) || isdigit(c) || c == '"') {
+			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
+			state = 0; /*Start at state 0*/
+			state = get_next_state(state, c);
+			
+			/* If the state is NOAS loop until it reaches an AS */
+			while (as_table[state] == NOAS ) {
+				state = get_next_state(state, c);
+				if (as_table[state] != NOAS) { /* Break the loop at the correct char */
+					break;
+				}
+				c = b_getc;
+			}
+
+			/* if ASWR retract buffer */
+			if (as_table[state] == ASWR) {
+				b_retract(sc_buf);
+			}
+
+			/* Reached an Accepting state set lexend */
+			lexend = getc_offset(sc_buf); 
+
+			/* Create temporary buffer */
+			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
+
+		}
 	}
 };
 
@@ -253,7 +275,6 @@ int char_class(char c) {
 	/*Column 0 [a-zA-Z]*/
 	if (isalpha(c))
 		val = 0;
-
 	/*Column 1 value 0 */
 	else if (c == '0')
 		val = 1;
