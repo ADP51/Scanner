@@ -39,6 +39,9 @@
 #define ER  12 /* Error state  with retract */
 #define IS -1    /* Inavalid state */
 
+#define KEYWORD_NOT_FOUND -1
+#define RT_ERR -1
+
 /* State transition table definition */
 
 #define TABLE_COLUMNS 8

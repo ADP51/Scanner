@@ -387,18 +387,23 @@ Token aa_func02(char lexeme[]) {
 	/*token return*/
 	Token t;
 	/*unsigned integers for loop count*/
-	unsigned int i, j = 0;
+	unsigned int j = 0;
 	/********STEP 1 Check if lexeme has a keyword*******/
-	for (i = 0; i < KWT_SIZE; i++) {
+	/*for (i = 0; i < KWT_SIZE; i++) {
 		/*if keyword is found using string compare*/
-		if (strcmp(lexeme, kw_table[i]) == 0) {
+		/*if (strcmp(lexeme, kw_table[i]) == 0) {
 			/*set keyword token*/
-			t.code = KW_T;
-			/*set the keyword index from keyword table*/
-			t.attribute.kwt_idx = i;
-			return t;
-		}
+	int isKeyword = iskeyword(lexeme);
+
+	if (isKeyword != KEYWORD_NOT_FOUND) {
+		t.code = KW_T;
+		/*set the keyword index from keyword table*/
+		t.attribute.kwt_idx = isKeyword;
+		return t;
 	}
+	
+		/*}*/
+	/*}*/
 	/*******STEP 2 if no keyword is found**********/
 		/*Set AVID token*/
 	t.code = AVID_T;
@@ -642,5 +647,40 @@ Token aa_func12(char lexeme[]) {
 	t.attribute.err_lex[++j] = '\0';
 
 	return t;
+}
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: isKeyWord()
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function:strcmp()
+Parameters:     Name:               Type:           Range:
+				kw_lexeme			char *			any possible string or symbol
+
+Return:  -1 or keyword index of the keyword table
+Algorithm: Used to check if a String is a keyword or not
+			
+		   -Task 1: check if lexeme is null
+		   -Task 2: loop through the keyword table (defined in table.h) and compare string. If match then return the index from where it matches
+		            if there is no match, return -1. Cannot return 0 because it is an index within the keyword table.
+
+****************************************************************************************************************/
+int iskeyword(char* kw_lexeme) {
+	/*Loop counter*/
+	int i;
+	/*Check if kw_lexeme has data return -1 if it is(cannot do index integer)*/
+	if (kw_lexeme == NULL)
+		return RT_ERR;
+
+	/*Loop through the size of the keyword table and compare with the kw_lexeme*/
+	for (i = 0; i < KWT_SIZE; i++) {
+		if (strcmp(kw_table[i], kw_lexeme) == 0) {
+			return i;
+		}
+	
+	}
+	/*return -1 if no keyword is found (cannot have a returning integer that matches and index*/
+	return KEYWORD_NOT_FOUND;
+
 }
 
