@@ -81,17 +81,6 @@ Token malar_next_token(void) {
 
 		c = b_getc(sc_buf);
 
-
-		/* Part 1: Implementation of token driven scanner */
-		/* every token is possessed by its own dedicated code */
-			  /*  Special case tokens processed separately one by one
-			   *  in the token-driven part of the scanner
-			   *  '=' , ' ' , '(' , ')' , '{' , '}' , == , <> , '>' , '<' , ';',
-			   *  white space
-			   *  !!comment , ',' , ';' , '-' , '+' , '*' , '/', << ,
-			   *  .AND., .OR. , SEOF,
-			   */
-
 		switch (c) {
 		case SEOF:
 			t.code = SEOF_T;
@@ -156,9 +145,7 @@ Token malar_next_token(void) {
 			}
 			else {
 				t.code = ERR_T;
-				t.attribute.err_lex[0] = '!';
-				t.attribute.err_lex[1] = c;
-				t.attribute.err_lex[2] = '\0';
+				t.attribute.err_lex[0] = c;
 				while (c != NL) {
 					c = b_getc(sc_buf);
 				}
@@ -169,7 +156,7 @@ Token malar_next_token(void) {
 			t.code = COM_T;
 			return t;
 
-		/* Arithmetic operators */
+			/* Arithmetic operators */
 		case '-':
 			t.code = ART_OP_T;
 			t.attribute.arr_op = MINUS;
@@ -186,50 +173,15 @@ Token malar_next_token(void) {
 			t.code = ART_OP_T;
 			t.attribute.arr_op = DIV;
 			return t;
-		case '.':
-
 		}
 	}
-}
 
-/*				NOTE :
-			IF LEXICAL ERROR OR ILLEGAL CHARACTER ARE FOUND THE SCANNER MUST RETURN AN ERROR TOKEN.
-				ILLEGAL CHARACTER IS ONE THAT IS NOT DEFINED IN THE LANGUAGE SPECIFICATION
-				OR IT IS OUT OF CONTEXT.
-				THE ILLEGAL CHAR IS THE ATTRIBUTE OF THE ERROR TOKEN
-				THE ILLEGAL CHARACTERS ARE PROCESSED BY THE TRANSITION TABLE.
-				SOME OF THE LEXICAL ERRORS ARE ALSO PROCESSED BY THE TRANSITION TABLE.
+	if (isalpha(c) || isdigit(c) || c == '"') {
+		lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
+		state = 0;
 
-				IN A CASE OF RUNTIME ERROR, THE FUNCTION MUST STORE
-				A NON - NEGATIVE NUMBER INTO THE GLOBAL VARIABLE scerrnum
-				AND RETURN A RUN TIME ERROR TOKEN.THE RUN TIME ERROR TOKEN ATTRIBUTE
-				MUST BE THE STRING "RUN TIME ERROR: "
-
-				IF(c == SOME CHARACTER)
-				...
-				SKIP CHARACTER(FOR EXAMPLE SPACE)
-				continue;
-			OR SET TOKEN(SET TOKEN CODE AND TOKEN ATTRIBUTE(IF AVAILABLE))
-				return t;
-		EXAMPLE:
-			if (c == ' ') continue;
-			if (c == '{') {
-				t.code = RBR_T; /*no attribute *//* return t;
-			/*	if (c == '+') {
-					t.code = ART_OP_T; t.attribute.arr_op = PLUS * / return t;
-					...
-
-						IF(c == '.') TRY TO PROCESS.AND. or .OR.
-						IF SOMETHING ELSE FOLLOWS.OR THE LAST.IS MISSING
-						RETURN AN ERROR TOKEN
-						IF(c == '!') TRY TO PROCESS COMMENT
-						IF THE FOLLOWING CHAR IS NOT !REPORT AN ERROR
-						ELSE IN A LOOP SKIP CHARACTERS UNTIL line terminator is found THEN continue;
-					...
-
-						IF(c == ANOTHER CHARACTER)
-						SET TOKEN
-						return t;
+	}
+};
 
 
 					/* Part 2: Implementation of Finite State Machine (DFA)
@@ -295,6 +247,7 @@ int get_next_state(int state, char c) {
 #endif
 	return next;
 }
+
 int char_class(char c) {
 	int val = 7;
 	/*Column 0 [a-zA-Z]*/

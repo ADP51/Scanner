@@ -58,12 +58,13 @@ int  st_table[][TABLE_COLUMNS] = {
 	/* State 11*/  {IS,IS,IS,IS,IS,IS,IS,IS},
 	/* State 12*/  {IS,IS,IS,IS,IS,IS,IS,IS},
 };
-	/* Accepting state table definition */
-	#define ASWR     1  /* accepting state with retract */
-	#define ASNR     3  /* accepting state with no retract */
-	#define NOAS     0  /* not accepting state */
+	
+/* Accepting state table definition */
+#define ASWR     1  /* accepting state with retract */
+#define ASNR     3  /* accepting state with no retract */
+#define NOAS     0  /* not accepting state */
 
-	int as_table[] = { NOAS, NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
+int as_table[] = { NOAS, NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
 
 /* Accepting action function declarations */
 
