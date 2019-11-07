@@ -206,6 +206,7 @@ Token malar_next_token(void) {
 
 		if (isalpha(c) || isdigit(c) || c == '"') {
 			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
+			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/
 			state = 0; /*Start at state 0*/
 			state = get_next_state(state, c);
 			
@@ -228,7 +229,21 @@ Token malar_next_token(void) {
 
 			/* Create temporary buffer */
 			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
+			if (lex_buf == NULL) { /*Error creating buffer*/
+				scerrnum = 1;
+				aa_func12("RUN TIME ERROR: ");
+			}
 
+			b_reset(sc_buf); /* reset getcoffset to the start of the LEXEME */
+
+			/* Copy the LEXEME to the lex_buf */
+			for (int i = lexstart; i <= lexend; i++) {
+				b_addc(lex_buf, b_getc(sc_buf));
+			}
+			b_addc(lex_buf, SEOF); /* Add SEOF to signify end of string */
+			t = aa_table[state](b_location(lex_buf)); /* calls the accepting function */
+			b_free(lex_buf); /* frees the temp buffer */
+			return t;
 		}
 	}
 };
