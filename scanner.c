@@ -173,6 +173,34 @@ Token malar_next_token(void) {
 			t.code = ART_OP_T;
 			t.attribute.arr_op = DIV;
 			return t;
+
+		case'.':
+			/*get character from buffer*/
+			char c = b_getc(sc_buf);
+
+			/*try and process logical operators by getting next characters from buffer NOTE: must have preceding .
+			  else error token is processed*/
+			  /*Check for AND*/
+			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
+				t.code = LOG_OP_T;
+				t.attribute = AND;
+				return t;
+				/*Check for OR*/
+			}
+			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
+				t.code = LOG_OP_T;
+				t.attribute = OR;
+				return t;
+				/*Return Error if none are found*/
+			}
+			else {
+				/*Error code set*/
+				t.code = ERR_T;
+				/*cause of error sent to err_lex*/
+				t.attribute.err_lex[0] = '.';
+				t.attribute.err_lex[1] = '\0';
+				return t;
+			}
 		}
 	}
 
@@ -268,13 +296,13 @@ int char_class(char c) {
 		val = 4;
 	/*Column 5  value " */
 	else if (c == '"')
-		val = 5;
+		val = 6;
 	/*Column 6 value SEOF*/
 	else if (c == SEOF)
-		val = 6;
+		val = 7;
 	else
 		/*Column 7 value other*/
-		val = 7;
+		val = 5;
 
 	return val;
 }
@@ -349,28 +377,7 @@ Token aa_func03(char lexeme[]) {
 	return t;
 }
 
-
 Token aa_func05(char lexeme[]) {
-	/*temp token storage*/
-	Token t;
-	/*storage for string conversion to float*/
-	double toFloat;
-	/*convert string to double(atof return double) just to make it possible to check for max and min*/
-	toFloat = atof(lexeme);
-	/*check if the value is less or greater then MAX or MIN*/
-	if (toFloat < FLT_MIN || toFloat > FLT_MAX)
-		/*return err token*/
-		return aa_func12(lexeme);
-
-	/*setting the token code to floating point token*/
-	t.code = FPL_T;
-	/*setting attribute floating point value*/
-	t.attribute.flt_value = (float)toFloat;
-
-	return t;
-}
-
-Token aa_func08(char lexeme[]) {
 	/*temporary token*/
 	Token t;
 	/*variable storage to store the converted integer*/
@@ -386,6 +393,26 @@ Token aa_func08(char lexeme[]) {
 	t.code = INL_T;
 	/*set attribute*/
 	t.attribute.int_value = toInt;
+
+	return t;
+}
+
+Token aa_func08(char lexeme[]) {
+	/*temp token storage*/
+	Token t;
+	/*storage for string conversion to float*/
+	double toFloat;
+	/*convert string to double(atof return double) just to make it possible to check for max and min*/
+	toFloat = atof(lexeme);
+	/*check if the value is less or greater then MAX or MIN*/
+	if (toFloat < FLT_MIN || toFloat > FLT_MAX)
+		/*return err token*/
+		return aa_func12(lexeme);
+
+	/*setting the token code to floating point token*/
+	t.code = FPL_T;
+	/*setting attribute floating point value*/
+	t.attribute.flt_value = (float)toFloat;
 
 	return t;
 }
