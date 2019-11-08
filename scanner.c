@@ -176,20 +176,20 @@ Token malar_next_token(void) {
 
 		case'.':
 			/*get character from buffer*/
-			c = b_getc(sc_buf);
+			char c = b_getc(sc_buf);
 
 			/*try and process logical operators by getting next characters from buffer NOTE: must have preceding .
 			  else error token is processed*/
 			  /*Check for AND*/
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute.rel_op= AND;
+				t.attribute = AND;
 				return t;
 				/*Check for OR*/
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute.rel_op = OR;
+				t.attribute = OR;
 				return t;
 				/*Return Error if none are found*/
 			}
@@ -225,7 +225,7 @@ Token malar_next_token(void) {
 			}
 
 			/* Reached an Accepting state set lexend */
-			lexend = b_getcoffset(sc_buf); 
+			lexend = getc_offset(sc_buf); 
 
 			/* Create temporary buffer */
 			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
@@ -313,8 +313,29 @@ int get_next_state(int state, char c) {
 	return next;
 }
 
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: char_class
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function:isalpha(),isdigit()
+Parameters:     Name:               Type:           Range:
+				c				    char            any possible symbol
+
+Return:  Integer : value of the column from the state table (st_table) 
+Algorithm:Checks : char is equal to  - [a-zA-Z] (is a letter) -- VAL = 0
+									 - 0 (is zero) -- VAL = 1
+									 - [1-9] (is a digit from 1 to 9) -- VAL = 2
+									 - . (period) -- VAL = 3
+									 - @ (at symbol) -- VAL = 4
+									 - " (quotes) -- VAL = 6
+									 - SEOF(source end of file) -- VAL = 7
+									 - Other -- VAL = 6
+
+									 returns the column value;
+****************************************************************************************************************/
 int char_class(char c) {
-	int val = 7;
+	int val = 5;
 	/*Column 0 [a-zA-Z]*/
 	if (isalpha(c))
 		val = 0;
@@ -342,22 +363,47 @@ int char_class(char c) {
 
 	return val;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct02
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function: strcmp(),strlen()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: keyword token or AVID Token
+Algorithm: ACCEPTING FUNCTION FOR THE arithmentic variable identifier AND keywords (VID - AVID/KW)
+		   State 02 ACCEPTING STATE NUMBER.
+		   
+		   -Task 1: Check if the char array [] lexeme is holding a keyword, if found set keyword index to i, and set token code to KW_T
+		   
+		   -Task 2: If no keyword was found. set AVID token and process the characters within the array
+					if lexeme is greater then 8 characters, it takes the first 8 characters and stores string identifier \0 at the last position
+					else if lexeme is less then 8 characters it stores all chars within the lexeme in 
+ 
+****************************************************************************************************************/
 Token aa_func02(char lexeme[]) {
+	/*token return*/
 	Token t;
-	unsigned int i, j = 0;
+	/*unsigned integers for loop count*/
+	unsigned int j = 0;
 	/********STEP 1 Check if lexeme has a keyword*******/
-	for (i = 0; i < KWT_SIZE; i++) {
+	/*for (i = 0; i < KWT_SIZE; i++) {
 		/*if keyword is found using string compare*/
-		if (strcmp(lexeme, kw_table[i]) == 0) {
+		/*if (strcmp(lexeme, kw_table[i]) == 0) {
 			/*set keyword token*/
-			t.code = KW_T;
-			/*set the keyword index from keyword table*/
-			t.attribute.kwt_idx = i;
-			return t;
-		}
-	}
+	int isKeyword = iskeyword(lexeme);
 
+	if (isKeyword != KEYWORD_NOT_FOUND) {
+		t.code = KW_T;
+		/*set the keyword index from keyword table*/
+		t.attribute.kwt_idx = isKeyword;
+		return t;
+	}
+	
+		/*}*/
+	/*}*/
 	/*******STEP 2 if no keyword is found**********/
 		/*Set AVID token*/
 	t.code = AVID_T;
@@ -373,14 +419,32 @@ Token aa_func02(char lexeme[]) {
 	}
 	/*if lexeme is <  then 8 characters*/
 	for (j = 0; j < strlen(lexeme); j++) {
-
 		t.attribute.vid_lex[j] = lexeme[j];
 	}
 	t.attribute.vid_lex[j] = '\0';
 	return t;
 
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct03
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function: strlen()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: String variable identifier token 
+Algorithm: ACCEPTING FUNCTION FOR THE string variable identifier (VID - SVID)
+		   State 03 ACCEPTING STATE NUMBER
+		  
+		  -Task1: set token code to SVID_T(string variable identifier)
+		   check the length of lexeme if its greater then vid_len (8 char) take the first vid_len-1 from lexeme and add to vid_lex.
+		   add an @ variables identifier symbol and string identifier \0 at the end of vid_lex (two last positions) 
+		   
+		  -Task2: if lexeme is less then vid_len (8 char) add lexeme char to vid_lex and add the string type identifier to the last position (\0) 
+
+****************************************************************************************************************/
 Token aa_func03(char lexeme[]) {
 	/*Token to return*/
 	Token t;
@@ -412,7 +476,22 @@ Token aa_func03(char lexeme[]) {
 
 	return t;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct05
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function: atoi()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: Integer literal or Error token
+Algorithm: ACCEPTING FUNCTION FOR THE integer literal(IL) - decimal constant (DIL)
+		   
+		   -Task1: convert lexeme to integer and verify it is within the range of a 2 byte integer max and min (short) return error token if not
+			if lexeme is integer literal, assign token code to integer literal code and int value to the value of the lexeme integer.
+
+****************************************************************************************************************/
 Token aa_func05(char lexeme[]) {
 	/*temporary token*/
 	Token t;
@@ -432,7 +511,24 @@ Token aa_func05(char lexeme[]) {
 
 	return t;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct08
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function: atof()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: Floating point literal to or Error
+Algorithm: ACCEPTING FUNCTION FOR THE floating-point literal (FPL)
+
+		   -Task1: convert lexeme to double (atof return double) check if toFloat is within the range the max and min of a 4byte floating point number (float) 
+			       return error token if it isn't
+				   if it is, set token to FPL_T(floating point token) 
+				   and attribute float value to value of toFLoat
+
+****************************************************************************************************************/
 Token aa_func08(char lexeme[]) {
 	/*temp token storage*/
 	Token t;
@@ -452,7 +548,24 @@ Token aa_func08(char lexeme[]) {
 
 	return t;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct10
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function:strlen(), b_addc()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: String literal token 
+Algorithm: ACCEPTING FUNCTION FOR THE string literal(SL)
+
+		   Task1:  -set token str offset attribute to head of string literal table
+				   -loop through the lexeme array and add string literal from lexeme to buffer str_LTBL
+				   -ignore the opening and closing "" and keep count when a new line character is found.
+				   -add the String type identifier \0 when all lexeme char are transfered and set String token code
+
+****************************************************************************************************************/
 Token aa_func10(char lexeme[]) {
 	/*Temporary token*/
 	Token t;
@@ -479,8 +592,25 @@ Token aa_func10(char lexeme[]) {
 	t.code = STR_T;
 	return t;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: aa_funct12
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function:strlen()
+Parameters:     Name:               Type:           Range:
+				lexeme				char[]			length of the lexeme array
 
+Return:  Token  posibility: Error token
+Algorithm: ACCEPTING FUNCTION FOR THE ERROR TOKEN 
 
+		   Task1:  -Check if the lexeme err characters are greater then ERR_LEN (20 char)
+				   -if they add the lexeme char to err_lex with a ERR_LEN-3 size
+				   -add . . . at the last 3 before last positions and add the string type identifier at the last position
+				   -Note keep count of lines when new line character is found
+		   Task2:  If lexeme is less then ERR_LEN (20 char) add lexeme char to err_lex and add the string type identifier at the last position
+
+****************************************************************************************************************/
 Token aa_func12(char lexeme[]) {
 	/*Token storage*/
 	Token t;
@@ -518,3 +648,39 @@ Token aa_func12(char lexeme[]) {
 
 	return t;
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: isKeyWord()
+Author: Johnathon Cameron
+History/Version: 1.3
+Called Function:strcmp()
+Parameters:     Name:               Type:           Range:
+				kw_lexeme			char *			any possible string or symbol
+
+Return:  -1 or keyword index of the keyword table
+Algorithm: Used to check if a String is a keyword or not
+			
+		   -Task 1: check if lexeme is null
+		   -Task 2: loop through the keyword table (defined in table.h) and compare string. If match then return the index from where it matches
+		            if there is no match, return -1. Cannot return 0 because it is an index within the keyword table.
+
+****************************************************************************************************************/
+int iskeyword(char* kw_lexeme) {
+	/*Loop counter*/
+	int i;
+	/*Check if kw_lexeme has data return -1 if it is(cannot do index integer)*/
+	if (kw_lexeme == NULL)
+		return RT_ERR;
+
+	/*Loop through the size of the keyword table and compare with the kw_lexeme*/
+	for (i = 0; i < KWT_SIZE; i++) {
+		if (strcmp(kw_table[i], kw_lexeme) == 0) {
+			return i;
+		}
+	
+	}
+	/*return -1 if no keyword is found (cannot have a returning integer that matches and index*/
+	return KEYWORD_NOT_FOUND;
+
+}
+
