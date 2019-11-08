@@ -176,20 +176,20 @@ Token malar_next_token(void) {
 
 		case'.':
 			/*get character from buffer*/
-			char c = b_getc(sc_buf);
+			c = b_getc(sc_buf);
 
 			/*try and process logical operators by getting next characters from buffer NOTE: must have preceding .
 			  else error token is processed*/
 			  /*Check for AND*/
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute = AND;
+				t.attribute.rel_op= AND;
 				return t;
 				/*Check for OR*/
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute = OR;
+				t.attribute.rel_op = OR;
 				return t;
 				/*Return Error if none are found*/
 			}
@@ -225,7 +225,7 @@ Token malar_next_token(void) {
 			}
 
 			/* Reached an Accepting state set lexend */
-			lexend = getc_offset(sc_buf); 
+			lexend = b_getcoffset(sc_buf); 
 
 			/* Create temporary buffer */
 			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
@@ -518,9 +518,3 @@ Token aa_func12(char lexeme[]) {
 
 	return t;
 }
-
-
-
-/*		HERE YOU WRITE YOUR ADDITIONAL FUNCTIONS(IF ANY).
-			FOR EXAMPLE
-			int iskeyword(char* kw_lexeme) {}*/
