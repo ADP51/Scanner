@@ -82,9 +82,61 @@ Token malar_next_token(void) {
 
 		c = b_getc(sc_buf);
 
+
+		if (c == SEOF) {
+			t.code = SEOF_T;
+			t.attribute.seof = SEOF_0;
+			
+		}
+
+		/*State Machine to check see if a letter or digit is found before looking for invalid symbols in the default case*/
+		if (isalnum((int)c) != 0 || c == '"') {
+			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
+			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/
+			state = 0; /*Start at state 0*/
+			c = b_getc(sc_buf);
+
+			/* If the state is NOAS loop until it reaches an AS */
+			while (as_table[state] == NOAS) {
+				state = get_next_state(state, c);
+				if (as_table[state] != NOAS) { /* Break the loop at the correct char */
+					break;
+				}
+				c = b_getc(sc_buf);
+			}
+
+			/* if ASWR retract buffer */
+			if (as_table[state] == ASWR) {
+				b_retract(sc_buf);
+			}
+
+			/* Reached an Accepting state set lexend */
+			lexend = (short)b_getcoffset(sc_buf);
+
+			/* Create temporary buffer */
+			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
+			if (lex_buf == NULL) { /*Error creating buffer*/
+				scerrnum = 1;
+				aa_func12("RUN TIME ERROR: ");
+			}
+
+			b_reset(sc_buf); /* reset getcoffset to the start of the LEXEME */
+
+			/* Copy the LEXEME to the lex_buf */
+			for (int i = lexstart; i < lexend; i++) {
+				b_addc(lex_buf, b_getc(sc_buf));
+			}
+			b_addc(lex_buf, SEOF); /* Add SEOF to signify end of string */
+			t = aa_table[state](b_location(lex_buf)); /* calls the accepting function */
+			b_free(lex_buf); /* frees the temp buffer */
+			return t;
+		}
+
+		//Symbol switch case
 		switch (c) {
 		case SEOF:
 			t.code = SEOF_T;
+			t.attribute.seof = SEOF_0;
 			break;
 		case ' ':
 			continue; /* If char is whitespace ignore and continue */
@@ -148,7 +200,9 @@ Token malar_next_token(void) {
 			}
 			else {
 				t.code = ERR_T;
-				t.attribute.err_lex[0] = c;
+				t.attribute.err_lex[0] = '!';
+				t.attribute.err_lex[1] = c;
+				t.attribute.err_lex[2] = '\0';
 				while (c != NL) {
 					c = b_getc(sc_buf);
 				}
@@ -178,6 +232,8 @@ Token malar_next_token(void) {
 			return t;
 
 		case'.':
+			/*Setting markoffset to the char preceding the .*/
+			b_mark(sc_buf, b_getcoffset(sc_buf));
 			/*get character from buffer*/
 			c = b_getc(sc_buf);
 
@@ -198,57 +254,21 @@ Token malar_next_token(void) {
 			}
 			else {
 				/*Error code set*/
+				b_reset(sc_buf);
 				t.code = ERR_T;
 				/*cause of error sent to err_lex*/
 				t.attribute.err_lex[0] = '.';
 				t.attribute.err_lex[1] = '\0';
 				return t;
 			}
-		}
 
-
-
-		if (isalpha(c) || isdigit(c) || c == '"') {
-			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
-			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/
-			state = 0; /*Start at state 0*/
-			c = b_getc(sc_buf);
-			
-			/* If the state is NOAS loop until it reaches an AS */
-			while (as_table[state] == NOAS ) {
-				state = get_next_state(state, c);
-				if (as_table[state] != NOAS) { /* Break the loop at the correct char */
-					break;
-				}
-				c = b_getc(sc_buf);
-			}
-
-			/* if ASWR retract buffer */
-			if (as_table[state] == ASWR) {
-				b_retract(sc_buf);
-			}
-
-			/* Reached an Accepting state set lexend */
-			lexend = (short)b_getcoffset(sc_buf); 
-
-			/* Create temporary buffer */
-			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
-			if (lex_buf == NULL) { /*Error creating buffer*/
-				scerrnum = 1;
-				aa_func12("RUN TIME ERROR: ");
-			}
-
-			b_reset(sc_buf); /* reset getcoffset to the start of the LEXEME */
-
-			/* Copy the LEXEME to the lex_buf */
-			for (int i = lexstart; i < lexend; i++) {
-				b_addc(lex_buf, b_getc(sc_buf));
-			}
-			b_addc(lex_buf, SEOF); /* Add SEOF to signify end of string */
-			t = aa_table[state](b_location(lex_buf)); /* calls the accepting function */
-			b_free(lex_buf); /* frees the temp buffer */
+		default: 
+			t.code = ERR_T;
+			t.attribute.err_lex[0] = c;
+			t.attribute.err_lex[1] = '\0';
 			return t;
 		}
+
 		return t;
 	}
 }
@@ -499,10 +519,7 @@ Token aa_func08(char lexeme[]) {
 	/*convert string to double(atof return double) just to make it possible to check for max and min*/
 	toFloat = atof(lexeme);
 	/*check if the value is less or greater then MAX or MIN*/
-	if (toFloat < 0 || toFloat > FLT_MAX) {
-		/*return err token*/
-		return aa_func12(lexeme);
-	}
+	if (((toFloat >= 0 && strlen(lexeme) > 7) && (toFloat< FLT_MIN || toFloat > FLT_MAX)) || (toFloat < 0)) return aa_func12(lexeme);
 
 	/*setting the token code to floating point token*/
 	t.code = FPL_T;
@@ -602,7 +619,7 @@ Token aa_func12(char lexeme[]) {
 	/*If lexeme is shorter then ERR_LEN (20 char) */
 	unsigned int j = 0;
 
-	for (j = 0; j < strlen(lexeme); j++) {
+	for (j = 0; j < ERR_LEN; j++) {
 		/*nl check*/
 		if (lexeme[j] == '\n') line++;
 		t.attribute.err_lex[j] = lexeme[j];
@@ -648,4 +665,5 @@ int iskeyword(char* kw_lexeme) {
 	return KEYWORD_NOT_FOUND;
 
 }
+
 
