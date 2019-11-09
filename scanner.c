@@ -56,7 +56,8 @@ static int iskeyword(char* kw_lexeme); /*keywords lookup functuion */
 
 
 /*Initializes scanner */
-int scanner_init(pBuffer psc_buf) {
+int scanner_init(Buffer* psc_buf)
+{
 	if (b_isempty(psc_buf)) return EXIT_FAILURE;/*1*/
 	/* in case the buffer has been read previously  */
 	b_rewind(psc_buf);
@@ -64,7 +65,7 @@ int scanner_init(pBuffer psc_buf) {
 	line = 1;
 	sc_buf = psc_buf;
 	return EXIT_SUCCESS;/*0*/
-/*   scerrnum = 0;  *//*no need - global ANSI C */
+	/*   scerrnum = 0;  *//*no need - global ANSI C */
 }
 
 Token malar_next_token(void) {
@@ -87,6 +88,8 @@ Token malar_next_token(void) {
 			break;
 		case ' ':
 			continue; /* If char is whitespace ignore and continue */
+		case '\t':
+			continue;
 		case NL: /* Check for New Line */
 			line++; /* increment line number */
 			continue;
@@ -138,7 +141,7 @@ Token malar_next_token(void) {
 			c = b_getc(sc_buf);
 			if (c == '!') { /* Check for !! comment symbol */
 				while (c != NL) { /* Loop through and ignore the entire line*/
-					b_getc(sc_buf);
+					c = b_getc(sc_buf);
 				}
 				line++;/* increment line */
 				continue;
@@ -176,20 +179,20 @@ Token malar_next_token(void) {
 
 		case'.':
 			/*get character from buffer*/
-			char c = b_getc(sc_buf);
+			c = b_getc(sc_buf);
 
 			/*try and process logical operators by getting next characters from buffer NOTE: must have preceding .
 			  else error token is processed*/
 			  /*Check for AND*/
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute = AND;
+				t.attribute.rel_op = AND;
 				return t;
 				/*Check for OR*/
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;
-				t.attribute = OR;
+				t.attribute.rel_op = OR;
 				return t;
 				/*Return Error if none are found*/
 			}
@@ -204,11 +207,12 @@ Token malar_next_token(void) {
 		}
 
 
+
 		if (isalpha(c) || isdigit(c) || c == '"') {
 			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
 			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/
 			state = 0; /*Start at state 0*/
-			state = get_next_state(state, c);
+			c = b_getc(sc_buf);
 			
 			/* If the state is NOAS loop until it reaches an AS */
 			while (as_table[state] == NOAS ) {
@@ -216,7 +220,7 @@ Token malar_next_token(void) {
 				if (as_table[state] != NOAS) { /* Break the loop at the correct char */
 					break;
 				}
-				c = b_getc;
+				c = b_getc(sc_buf);
 			}
 
 			/* if ASWR retract buffer */
@@ -225,7 +229,7 @@ Token malar_next_token(void) {
 			}
 
 			/* Reached an Accepting state set lexend */
-			lexend = getc_offset(sc_buf); 
+			lexend = (short)b_getcoffset(sc_buf); 
 
 			/* Create temporary buffer */
 			lex_buf = b_allocate((lexend - lexstart) + 1, 0, 'f');
@@ -237,7 +241,7 @@ Token malar_next_token(void) {
 			b_reset(sc_buf); /* reset getcoffset to the start of the LEXEME */
 
 			/* Copy the LEXEME to the lex_buf */
-			for (int i = lexstart; i <= lexend; i++) {
+			for (int i = lexstart; i < lexend; i++) {
 				b_addc(lex_buf, b_getc(sc_buf));
 			}
 			b_addc(lex_buf, SEOF); /* Add SEOF to signify end of string */
@@ -245,51 +249,9 @@ Token malar_next_token(void) {
 			b_free(lex_buf); /* frees the temp buffer */
 			return t;
 		}
+		return t;
 	}
-};
-
-
-					/* Part 2: Implementation of Finite State Machine (DFA)
-							   or Transition Table driven Scanner
-							   Note: Part 2 must follow Part 1 to catch the illegal symbols
-					*/
-
-					/*		SET THE MARK AT THE BEGINING OF THE LEXEME AND SAVE IT IN lexstart
-								lexstart = b_mark(sc_buf, ...);
-							....
-								PLACE THE CODE OF YOUR FINITE STATE MACHINE HERE(FSM or DFA)
-								IT MUST IMPLEMENT THE FOLLOWING ALGORITHM :
-
-							FSM0.Begin with state = 0 and the input character c.
-								FSM1.Get the next state from the transition table calling
-								state = get_next_state(state, c);
-							FSM2.Use the as_table to get the type of the state.
-								If the state is not an accepting(NOAS) state,
-								get the next character from the input bufferand repeat FSM1.
-								FSM3.If the state is an accepting state, token is found, leave the machineand
-								call an accepting function as described below.
-
-								IF THE ACCEPTING STATE IS A RETRACTING ACCEPTING STATE
-								RETRACT  getc_offset USING AN APPROPRIATE BUFFER FUNCTION.
-
-								SET lexend TO getc_offset USING AN APPROPRIATE BUFFER FUNCTION
-
-								CREATE  A TEMPORRARY LEXEME BUFFER HERE;
-							lex_buf = b_allocate(...);
-							.RETRACT getc_offset to the MARK SET PREVIOUSLY AT THE BEGINNING OF THE LEXEME AND
-								.USING b_getc() COPY THE LEXEME BETWEEN lexstart AND lexend FROM THE INPUT BUFFER INTO lex_buf USING b_addc(...),
-								. WHEN VID(KEYWORDS INCLUDED), FPL, IL OR SL IS RECOGNIZED
-								.YOU MUST CALL THE ACCEPTING FUNCTION USING THE ARRAY aa_table, WHICH
-								.CONTAINS POINTERS TO FUNCTIONS.THE ARRAY INDEX OF THE FUNCTION TO BE
-								.CALLED IS STORED IN THE VARIABLE state.
-								.YOU ARE NOT ALLOWED TO CALL ANY OF THE ACCEPTING FUNCTIONS BY NAME.
-								.THE ARGUMENT TO THE FUNCTION IS THE STRING STORED IN lex_buf char array.
-								....
-								b_free(lex_buf);
-
-							return t;
-						}end while(1)
-					}*/
+}
 
 
 int get_next_state(int state, char c) {
@@ -537,9 +499,10 @@ Token aa_func08(char lexeme[]) {
 	/*convert string to double(atof return double) just to make it possible to check for max and min*/
 	toFloat = atof(lexeme);
 	/*check if the value is less or greater then MAX or MIN*/
-	if (toFloat < FLT_MIN || toFloat > FLT_MAX)
+	if (toFloat < 0 || toFloat > FLT_MAX) {
 		/*return err token*/
 		return aa_func12(lexeme);
+	}
 
 	/*setting the token code to floating point token*/
 	t.code = FPL_T;
@@ -571,9 +534,9 @@ Token aa_func10(char lexeme[]) {
 	Token t;
 	/*counter variable*/
 	unsigned int i;
-
-	/*Set token attribute to head of str table using b_location*/
-	t.attribute.str_offset = b_location(str_LTBL);
+	short counter = 0;
+	/*Set token attribute to head of str table using b_limit*/
+	t.attribute.str_offset = b_limit(str_LTBL);
 
 	for (i = 0; i < strlen(lexeme); i++) {
 
@@ -592,6 +555,7 @@ Token aa_func10(char lexeme[]) {
 	t.code = STR_T;
 	return t;
 }
+
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: aa_funct12
@@ -648,6 +612,7 @@ Token aa_func12(char lexeme[]) {
 
 	return t;
 }
+
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: isKeyWord()

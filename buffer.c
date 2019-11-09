@@ -627,7 +627,12 @@ int b_rewind(Buffer* const pBD) {
 * Algorithm:
 **********************************************************************************************************/
 char* b_location(Buffer* const pBD) {
-	char* temp; /* The pointer to cb_head at markc_offset */
-	temp = &*(pBD->cb_head + pBD->markc_offset);
-	return temp;
+	if (pBD == NULL) {
+		return NULL;
+	}
+
+	char* location; /* Returned location */
+	location = pBD->cb_head+pBD->markc_offset;
+
+	return location;
 }
