@@ -670,11 +670,11 @@ int iskeyword(char* kw_lexeme) {
 	int i;
 	/*Check if kw_lexeme has data return -1 if it is(cannot do index integer)*/
 	if (kw_lexeme == NULL)
-		return RT_ERR;
+		return RT_FAIL_1;
 
 	/*Loop through the size of the keyword table and compare with the kw_lexeme*/
 	for (i = 0; i < KWT_SIZE; i++) {
-		if (strcmp(kw_table[i], kw_lexeme) == 0) {
+		if (strcmp(kw_table[i], kw_lexeme) == MATCH) {
 			return i;
 		}
 	

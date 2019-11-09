@@ -39,8 +39,9 @@
 #define ER  12 /* Error state  with retract */
 #define IS -1    /* Inavalid state */
 
-#define KEYWORD_NOT_FOUND -1
-#define RT_ERR -1
+#define KEYWORD_NOT_FOUND -1/*No keyword was found*/
+#define MATCH 0 /*Keyword is found*/
+
 
 /* State transition table definition */
 
