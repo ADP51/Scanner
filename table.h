@@ -54,7 +54,7 @@ int  st_table[][TABLE_COLUMNS] = {
 	/* State 4 */  {ES,4,4,7,5,5,IS,IS},
 	/* State 5 */  {IS,IS,IS,IS,IS,IS,IS,IS},
 	/* State 6 */  {ES,6,5,7,ES,5,ES,ER},
-	/* State 7 */  {ES,7,7,ES,8,8,ES,ER},
+	/* State 7 */  {ES,7,7,8,8,8,ES,ER},
 	/* State 8 */  {IS,IS,IS,IS,IS,IS,IS,IS},
 	/* State 9 */  {9,9,9,9,9,9,10,ES},
 	/* State 10*/  {IS,IS,IS,IS,IS,IS,IS,IS},
@@ -67,7 +67,7 @@ int  st_table[][TABLE_COLUMNS] = {
 #define ASNR     3  /* accepting state with no retract */
 #define NOAS     0  /* not accepting state */
 
-int as_table[] = { NOAS, NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, NOAS, ASNR, ASWR };
+int as_table[] = { NOAS, NOAS, ASWR, ASNR, NOAS, ASWR, NOAS, NOAS, ASWR, NOAS, ASNR, ASNR, ASWR };
 
 /* Accepting action function declarations */
 
@@ -102,7 +102,7 @@ PTR_AAF aa_table[] = {
 	/* State 8 */ aa_func08,
 	/* State 9 */ NULL,
 	/* State 10*/ aa_func10,
-	/* State 11*/ NULL,
+	/* State 11*/ aa_func12,
 	/* State 12*/ aa_func12
 };
 
