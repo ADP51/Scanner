@@ -1,17 +1,16 @@
-/* Filename: scanner.c
-/* PURPOSE:
- *    SCANNER.C: Functions implementing a Lexical Analyzer (Scanner)
- *    as required for CST8152, Assignment #2
- *    scanner_init() must be called before using the scanner.
- *    The file is incomplete;
- *    Provided by: Svillen Ranev
- *    Version: 1.19.2
- *    Date: 2 October 2019
- *******************************************************************
- *    REPLACE THIS HEADER WITH YOUR HEADER
- *******************************************************************
- */
-
+/**************************************************************************************************************											FILE HEADER
+ File Name: Scanner.c
+Compiler : MS Visual Studio 2019 
+Author: Johnathon Cameron and Andrew Palmer
+Course: Compilers CST8152_012:
+Assignment #: 2 - Scanner
+Date: 2019/11/12
+Professor: Sv. Ranev
+Description: Implementation of a Scanner for the platypus language compiler (Lexical Analyzer)
+Function List:
+		smalar_next_token(), get_next_state(), char_class,aa_function02(),aa_function03(),aa_function05(),
+		aa_function08(), aa_function10(), aa_function12(),iskeyword();
+**************************************************************************************************************/
  /* The #define _CRT_SECURE_NO_WARNINGS should be used in MS Visual Studio projects
   * to suppress the warnings about using "unsafe" functions like fopen()
   * and standard sting library functions defined in string.h.
@@ -54,7 +53,20 @@ static int char_class(char c); /* character class function */
 static int get_next_state(int, char); /* state machine function */
 static int iskeyword(char* kw_lexeme); /*keywords lookup functuion */
 
-
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: scanner_init
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function:b_isempty(),b_rewind(),b_clear()
+Parameters:     Name:               Type:           Range:
+				psc_buf				 Buffer*        any character if it has been read before or empty. 
+Return:  Integer : return 0 if success, 1 if did not succeed
+Algorithm:Checks : -Check if the buffer is empty, if so return failure.
+				   - rewinds the buffer and clear it incase it has be read before
+				   - assign sc_buf to psc_buf
+				   - exit with a success status
+****************************************************************************************************************/
 /*Initializes scanner */
 int scanner_init(Buffer* psc_buf)
 {
@@ -67,7 +79,41 @@ int scanner_init(Buffer* psc_buf)
 	return EXIT_SUCCESS;/*0*/
 	/*   scerrnum = 0;  *//*no need - global ANSI C */
 }
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: malar_next_token
+Author: Andrew Palmer and Johnathon Cameron
+History/Version: 1.5
+Called Function: isalnum(),b_getc(),b_retract(),b_getcoffset(),b_allocate(),b_addc(),free(),b_mark()
+Parameters:N/A
+Return:  Token
+Algorithm: 
+			- Get a character from the buffer
+			- if the character is source end of file set the token and attribute for seof
+			- State Machine algorithm to see if a letter or a digit is found. 
+				
+				PART 1: State machine has to be done first to avoid problems when looking for invalid symbols in the switch case	
+					State Machine: 
+						-set the lexstart to the beginning of the input
+						-set markcoffset of the input buffer to the start
+						-init starting state to 0 
+						-if the state is NOAS keep looping until the state reaches and accepting state
+						-if the state a retracting accepting state retract the buffer
+						-set lexend when it has reach an accepting state
+						-allocate temporary fixed mode buffer
+						-reset getcoffset to start at the beginning of the Lexeme
+						-copy the lexeme to the lex_buf and add the SEOF to show the end of a string identifier
+						-call the accepting functions within the table
+						-free the temporary buffer and return the token
 
+				PART 2 : Check For symbols within switch case and assign token code and attributes 
+						
+						- Symbols defined within the language : ",.,+,-,=,*,/,<<,{,},(,), <,>,<>,;,!
+						- Logical Operators : .AND. .OR.
+
+			            - if any of these operators are found, assign the token code and attribute if applies and return the token.
+						- Check for any invalid symbols within the case default and return error representing syntax error									 
+****************************************************************************************************************/
 Token malar_next_token(void) {
 
 	Token t = { 0 }; /* token to return after pattern recognition. Set all structure members to 0 */
@@ -76,20 +122,19 @@ Token malar_next_token(void) {
 	short lexstart;  /*start offset of a lexeme in the input char buffer (array) */
 	short lexend;    /*end   offset of a lexeme in the input char buffer (array)*/
 
-	/*DECLARE YOUR LOCAL VARIABLES HERE IF NEEDED*/
-
 	while (1) { /* endless loop broken by token returns it will generate a warning */
 
 		c = b_getc(sc_buf);
 
-
-		if (c == SEOF) {
+		/*if (c == SEOF) {
 			t.code = SEOF_T;
 			t.attribute.seof = SEOF_0;
 			
-		}
+		}*/
 
-		/*State Machine to check see if a letter or digit is found before looking for invalid symbols in the default case*/
+		/*************************************
+			PART 1 State Machine
+		*************************************/
 		if (isalnum((int)c) != 0 || c == '"') {
 			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
 			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/
@@ -132,7 +177,10 @@ Token malar_next_token(void) {
 			return t;
 		}
 
-		//Symbol switch case
+		/****************************************
+			PART 2  Symbol Check
+		****************************************/
+		/*Switch case to find language syntax*/
 		switch (c) {
 		case SEOF:
 			t.code = SEOF_T;
@@ -156,38 +204,38 @@ Token malar_next_token(void) {
 			t.code = ASS_OP_T; /* set token to assignment operator */
 			return t;
 		case '(':
-			t.code = LPR_T;
+			t.code = LPR_T; /*Left parenthesis token*/
 			return t;
 		case ')':
-			t.code = RPR_T;
+			t.code = RPR_T;/*Right parenthesis token*/
 			return t;
 		case '{':
-			t.code = LBR_T;
+			t.code = LBR_T;/*left bracket token*/
 			return t;
 		case '}':
-			t.code = RBR_T;
+			t.code = RBR_T;/*right bracket token*/
 			return t;
 		case '<':
 			c = b_getc(sc_buf);
 			if (c == '>') { /* check for not equal operator */
-				t.code = REL_OP_T;
-				t.attribute.rel_op = NE;
+				t.code = REL_OP_T; /*relation operator token*/
+				t.attribute.rel_op = NE;/*attribute*/
 				return t;
 			}
 			else if (c == '<') { /* Check for String concatenation */
-				t.code = SCC_OP_T;
+				t.code = SCC_OP_T;/*Strong string concatination token*/
 				return t;
 			}
 			b_retract(sc_buf);
-			t.code = REL_OP_T;
+			t.code = REL_OP_T;/*relation operator token*/
 			t.attribute.rel_op = LT; /* Assign less than attribute */
 			return t;
 		case '>':
-			t.code = REL_OP_T;
+			t.code = REL_OP_T;/*relational operator token*/
 			t.attribute.rel_op = GT;
 			return t;
 		case ';':
-			t.code = EOS_T;
+			t.code = EOS_T;/*end of statement token*/
 			return t;
 		case '!':
 			c = b_getc(sc_buf);
@@ -197,9 +245,8 @@ Token malar_next_token(void) {
 				}
 				line++;/* increment line */
 				continue;
-			}
-			else {
-				t.code = ERR_T;
+			}else {
+				t.code = ERR_T; /*Error token for comments Ex: !1 - invalid*/
 				t.attribute.err_lex[0] = '!';
 				t.attribute.err_lex[1] = c;
 				t.attribute.err_lex[2] = '\0';
@@ -210,24 +257,24 @@ Token malar_next_token(void) {
 				return t;
 			}
 		case ',':
-			t.code = COM_T;
+			t.code = COM_T;/*comma token*/
 			return t;
 
-			/* Arithmetic operators */
+		/*** Arithmetic operators ***/
 		case '-':
 			t.code = ART_OP_T;
-			t.attribute.arr_op = MINUS;
+			t.attribute.arr_op = MINUS;/*subtraction token*/
 			return t;
 		case '+':
-			t.code = ART_OP_T;
+			t.code = ART_OP_T;/*addition token*/
 			t.attribute.arr_op = PLUS;
 			return t;
 		case '*':
-			t.code = ART_OP_T;
+			t.code = ART_OP_T;/*multiplication token*/
 			t.attribute.arr_op = MULT;
 			return t;
 		case '/':
-			t.code = ART_OP_T;
+			t.code = ART_OP_T;/*division token*/
 			t.attribute.arr_op = DIV;
 			return t;
 
@@ -241,19 +288,20 @@ Token malar_next_token(void) {
 			  else error token is processed*/
 			  /*Check for AND*/
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
-				t.code = LOG_OP_T;
-				t.attribute.rel_op = AND;
+				t.code = LOG_OP_T;/*Logical operator token*/
+				t.attribute.rel_op = AND;/* AND value*/
 				return t;
 				/*Check for OR*/
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
-				t.code = LOG_OP_T;
-				t.attribute.rel_op = OR;
+				t.code = LOG_OP_T;/*Logical operator token*/
+				t.attribute.rel_op = OR;/* AND value*/
 				return t;
 				/*Return Error if none are found*/
 			}
 			else {
 				/*Error code set*/
+				/*Reset buff back to the location preceding the case symbol*/
 				b_reset(sc_buf);
 				t.code = ERR_T;
 				/*cause of error sent to err_lex*/
@@ -273,7 +321,18 @@ Token malar_next_token(void) {
 	}
 }
 
-
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: get_next_state()
+Author: Andrew Palmer and Johnathon Cameron
+History/Version: 1.5
+Called Function:
+Parameters:     Name:               Type:           Range:
+				state			    state            0-12
+				c                   char	         any possible char
+Return:  Integer : returning next state
+Algorithm:Checks : gets the next state in the column st_table
+****************************************************************************************************************/
 int get_next_state(int state, char c) {
 	int col;
 	int next;
@@ -298,7 +357,7 @@ int get_next_state(int state, char c) {
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: char_class
-Author: Johnathon Cameron
+Author: Andrew Palmer
 History/Version: 1.3
 Called Function:isalpha(),isdigit()
 Parameters:     Name:               Type:           Range:
@@ -366,27 +425,20 @@ Algorithm: ACCEPTING FUNCTION FOR THE arithmentic variable identifier AND keywor
  
 ****************************************************************************************************************/
 Token aa_func02(char lexeme[]) {
-	/*token return*/
+	/*temp token*/
 	Token t;
 	/*unsigned integers for loop count*/
 	unsigned int j = 0;
-	/********STEP 1 Check if lexeme has a keyword*******/
-	/*for (i = 0; i < KWT_SIZE; i++) {
-		/*if keyword is found using string compare*/
-		/*if (strcmp(lexeme, kw_table[i]) == 0) {
-			/*set keyword token*/
+	/********STEP 1 Check if lexeme has a KEYWORD*******/
 	int isKeyword = iskeyword(lexeme);
-
+	/*If a keyword is found*/
 	if (isKeyword != KEYWORD_NOT_FOUND) {
 		t.code = KW_T;
 		/*set the keyword index from keyword table*/
 		t.attribute.kwt_idx = isKeyword;
 		return t;
 	}
-	
-		/*}*/
-	/*}*/
-	/*******STEP 2 if no keyword is found**********/
+	/*******STEP 2 Arithmetic Variable identifier token**********/
 		/*Set AVID token*/
 	t.code = AVID_T;
 	/*if lexeme is > 8 chars*/
@@ -410,7 +462,7 @@ Token aa_func02(char lexeme[]) {
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: aa_funct03
-Author: Johnathon Cameron
+Author: Andrew Palmer
 History/Version: 1.3
 Called Function: strlen()
 Parameters:     Name:               Type:           Range:
@@ -483,7 +535,7 @@ Token aa_func05(char lexeme[]) {
 	toInt = atoi(lexeme);
 
 	/*if the integer is out of 2 byte integer range, return error*/
-	if (toInt > SHRT_MAX || toInt < SHRT_MIN)
+	if (toInt > SHRT_MAX || toInt < SHRT_MIN || strlen(lexeme) > INL_LEN)
 		return aa_func12(lexeme);
 
 	/*set token code*/
@@ -496,7 +548,7 @@ Token aa_func05(char lexeme[]) {
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: aa_funct08
-Author: Johnathon Cameron
+Author: Andrew Palmer
 History/Version: 1.3
 Called Function: atof()
 Parameters:     Name:               Type:           Range:
@@ -518,9 +570,8 @@ Token aa_func08(char lexeme[]) {
 	double toFloat;
 	/*convert string to double(atof return double) just to make it possible to check for max and min*/
 	toFloat = atof(lexeme);
-	/*check if the value is less or greater then MAX or MIN*/
-	if (((toFloat >= 0 && strlen(lexeme) > 7) && (toFloat< FLT_MIN || toFloat > FLT_MAX)) || (toFloat < 0)) return aa_func12(lexeme);
-
+	/*check for error if lexeme is greater then 32bits (4bytes x 8 bits = 32bits) also if its greater or less then the min and max range*/
+	if (((toFloat >= 0 && strlen(lexeme) > 32) && (toFloat< FLT_MIN || toFloat > FLT_MAX)) || (toFloat < 0)) return aa_func12(lexeme);
 	/*setting the token code to floating point token*/
 	t.code = FPL_T;
 	/*setting attribute floating point value*/
@@ -576,7 +627,7 @@ Token aa_func10(char lexeme[]) {
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: aa_funct12
-Author: Johnathon Cameron
+Author: Andrew Palmer
 History/Version: 1.3
 Called Function:strlen()
 Parameters:     Name:               Type:           Range:
@@ -632,7 +683,7 @@ Token aa_func12(char lexeme[]) {
 
 /**************************************************************************************************************
 										   FUNCTION HEADER
-Function Name: isKeyWord()
+Function Name: iskeyword()
 Author: Johnathon Cameron
 History/Version: 1.3
 Called Function:strcmp()
