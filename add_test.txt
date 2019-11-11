@@ -1,5 +1,31 @@
-{}
-()
+{
+}
+(
+)
++
+-
+=
+==
+*
+/
+;
+<>
+<
+>
+
+.AND.
+.OR.
+READ
+IF
+ELSE
+THEN	
+FALSE
+PLATYPUS	
+REPEAT
+THEN
+TRUE
+WHILE
+WRITE
 !!comment;
 !.Invalid comment
 1..00 invalid number
@@ -7,4 +33,8 @@ String@ = "My Scanner"
 1.11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 3.03
 1.000000000000
+1" !!Testing Error for " 
 "Says"<<"Hello" << "World"
+%
+$
+&
