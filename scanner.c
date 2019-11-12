@@ -265,7 +265,7 @@ Token malar_next_token(void) {
 
 		/*************************************
 		PART 2 State Machine
-	*************************************/
+		*************************************/
 		if (isalnum((int)c) != 0 || c == '"') {
 			lexstart = b_retract(sc_buf); /*set lexstart to the beginning of the input*/
 			b_mark(sc_buf, lexstart); /* Set Markcoffset of the input buffer to the lexstart*/

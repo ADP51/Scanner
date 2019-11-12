@@ -1,14 +1,14 @@
-/* Filename: table.h
- * Transition Table and function declarations necessary for the scanner implementation
- * as required for CST8152 - Assignment #2.
- * Version: 1.19.2
- * Date: 2 October 2019
- * Provided by: Svillen Ranev
- * The file is incomplete. You are to complete it.
- ***************************************************
- * REPLACE THIS HEADER WITH YOUR HEADER
- ***************************************************
- */
+/**************************************************************************************************************											FILE HEADER
+ File Name: table.h
+Compiler : MS Visual Studio 2019
+Author: Johnathon Cameron and Andrew Palmer
+Course: Compilers CST8152_012:
+Assignment #: 2 - Scanner
+Date: 2019/11/12
+Professor: Sv. Ranev
+Description: Implementation of the Transition Diagram and Transition Table.
+Function List:
+**************************************************************************************************************/
 
 #ifndef  TABLE_H_
 #define  TABLE_H_ 
@@ -25,14 +25,6 @@
   *    '\0' or one of 255,0xFF,EOF
   */
 #define SEOF '\0'
-
-  /*  Special case tokens processed separately one by one
-   *  in the token-driven part of the scanner
-   *  '=' , ' ' , '(' , ')' , '{' , '}' , == , <> , '>' , '<' , ';',
-   *  white space
-   *  !!comment , ',' , ';' , '-' , '+' , '*' , '/', << ,
-   *  .AND., .OR. , SEOF,
-   */
 
 #define NL  '\n'
 #define ES  11 /* Error state  with no retract */
