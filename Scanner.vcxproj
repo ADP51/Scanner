@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="buffer.c" />
+    <ClCompile Include="parser.c" />
     <ClCompile Include="platy.c">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level4</WarningLevel>
     </ClCompile>
@@ -134,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.h" />
+    <ClInclude Include="parser.h" />
     <ClInclude Include="table.h" />
     <ClInclude Include="token.h" />
   </ItemGroup>
