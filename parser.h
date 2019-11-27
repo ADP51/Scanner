@@ -36,10 +36,11 @@ extern Token malar_next_token();
 
 
 /*function declaration*/
-void parser(Buffer*);
+void parser();
 void match(int, int);
 void syn_eh(int);
 void syn_printe();
 void gen_incode(char*);
+void program();
 
 #endif
