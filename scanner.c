@@ -1,4 +1,5 @@
-/**************************************************************************************************************											FILE HEADER
+/************************************************************************************************
+							FILE HEADER
  File Name: Scanner.c
 Compiler : MS Visual Studio 2019 
 Author: Johnathon Cameron and Andrew Palmer
@@ -192,23 +193,29 @@ Token malar_next_token(void) {
 			return t;
 		case '!':
 			c = b_getc(sc_buf);
-			if (c == '!') { /* Check for !! comment symbol */
-				while (c != NL) { /* Loop through and ignore the entire line*/
-					c = b_getc(sc_buf);
-				}
-				line++;/* increment line */
-				continue;
-			}else {
+
+			if (c != '!') {
 				t.code = ERR_T; /*Error token for comments Ex: !1 - invalid*/
 				t.attribute.err_lex[0] = '!';
 				t.attribute.err_lex[1] = c;
 				t.attribute.err_lex[2] = '\0';
-				while (c != NL) {
-					c = b_getc(sc_buf);
-				}
-				line++;
-				return t;
 			}
+			while (c != NL) { /* Loop through and ignore the entire line*/
+				c = b_getc(sc_buf);
+				/*Check for End of File after comments*/
+				if (c == SEOF) {
+					t.code = SEOF_T;
+					t.attribute.seof = SEOF_0;
+					return t;
+				}
+			}
+			line++;/* increment line */
+			
+			if (c != '!') return t;
+
+			/*ignore comment*/
+			continue;
+			
 		case ',':
 			t.code = COM_T;/*comma token*/
 			return t;
