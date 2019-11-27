@@ -42,5 +42,6 @@ void syn_eh(int);
 void syn_printe();
 void gen_incode(char*);
 void program();
+void opt_statements();
 
 #endif

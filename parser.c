@@ -213,11 +213,61 @@ Algorithm:Checks : Function performs the production rules from the <program> non
 of FIRST set.
 
 GRAMMAR->
--FIRST(<program>) = {KW_T(PLATYPUS)}
--FIRST(<opt_statements>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE)}
+3.1 FIRST(<program>) = {KW_T(PLATYPUS)}
 ****************************************************************************************************************/
 void program() {
 		match(KW_T, PLATYPUS); match(LBR_T, NO_ATTR); opt_statements();
 		match(RBR_T, NO_ATTR);
 		gen_incode("PLATY: Program parsed");
 }
+
+/*3.1 FIRST(<opt_statements>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE)}*/
+void opt_statements() {}
+
+/*3.1 FIRST(<statements>) = { AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE) }*/
+void statements() {}
+
+/*3.1 FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ),            KW_T(WRITE)}*/
+void statements_prime() {}
+
+
+/*3.2 FIRST(<statement>) = { AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), */
+void statement() {}
+/*3.2.1FIRST(<assignment statement>) = { FIRST(<assignment expression>) }
+									 = { AVID_T, SVID_T }*/
+void assign_statement() {}
+
+/*3.2.1 FIRST(<assignment expression>) = { AVID_T, SVID_T } */
+void assign_expression() {}
+
+
+/*3.2.1 FIRST(<selection statement>) = {KW_T(IF)}*/
+void selection_statement(){}
+
+/*3.2.3 FIRST(<iteration statement>) = { KW_T(WHILE) }*/
+void iteration_statement(){}
+
+/*3.2.4 FIRST(<iteration statement>) = { KW_T(WHILE) } */
+void input_statement() {}
+
+
+/*3.2.4 FIRST(<variables list>) = { FIRST(<variable identifier>) }
+								= {AVID_T,SVID_T}*/
+void variable_list() {}
+
+/*3.2.4 FIRST(<variable list’>) = {COM_T, AVID_T,SVID_T,Ɛ) */
+void variable_list_prime() {}
+
+/*3.2.4 FIRST(<variable identifier>) = {AVID_T,SVID_T} */
+void variable_identifier() {}
+
+/*3.2.5 FIRST(<output statement>) = { KW_T(WRITE) }*/
+void output_statement() {}
+
+/*3.2.5 FIRST(<output list>)  = {FIRST(<variable list>)}
+                              = {Ɛ, AVID_T, SVID_T, STR_T}*/
+void output_list() {}
+
+/*3.3.1 FIRST(<arithmetic expression>) = { ART_OP_T(PLUS), ART_OP_T(MINUS), AVID_T, FPL_T, INL_T}*/
+
+
