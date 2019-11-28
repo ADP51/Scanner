@@ -227,7 +227,7 @@ void opt_statements() {}
 /*3.1 FIRST(<statements>) = { AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE) }*/
 void statements() {}
 
-/*3.1 FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ),            KW_T(WRITE)}*/
+/*3.1 FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE)}*/
 void statements_prime() {}
 
 
@@ -268,6 +268,69 @@ void output_statement() {}
                               = {Ɛ, AVID_T, SVID_T, STR_T}*/
 void output_list() {}
 
-/*3.3.1 FIRST(<arithmetic expression>) = { ART_OP_T(PLUS), ART_OP_T(MINUS), AVID_T, FPL_T, INL_T}*/
+/*3.3.1 FIRST(<arithmetic expression>) = { FIRST(<unary arithmetic expression>,FIRST(<additive arithmetic expression>) }
+                                       = { -, +, AVID_T, FPL_T, INL_T, ( }*/
+void arithmetic_expression() {} 
+
+/*3.3.1 FIRST(<unary arithmetic expression>) = { -,+}*/
+void unary_arithmetic_expression() {}
+
+/* FIRST(<additive arithmetic expression>) = { FIRST(<multiplicative arithmetic expression>) }
+= { AVID_T, FPL_T, INL_T, LPR_T }*/
+void addictive_arithmetic_expression() {}
+
+/*FIRST(<additive arithmetic expression’>) = { Ɛ, ART_OP_T(-), ART_OP_T(+)}*/
+void additive_arthmetic_expression_prime() {}
+
+/*FIRST(<multiplicative arithmetic expression>) = { FIRST(<primary arithmetic  expression>)}
+    = {Ɛ, ART_OP_T(DIV), ART_OP_T(MULT)}*/
+void multiplicative_arithmetic_expression() {}
+
+/*3.3.1 FIRST(<multiplicative arithmetic expression’>) = {Ɛ, ART_OP_T(/), ART_OP_T(*)}*/
+void multiplicative_arithmetic_expression_prime() {}
+
+/*3.3.1 FIRST(<primary arithmetic expression>) = { AVID_T, FPL_T, INL_T, LPR_T }*/
+void primary_arithmetic_expression() {}
 
 
+/*3.3.2 FIRST(<string expression>) ={FIRST(<primary string expression>)} = { SVID_T, STR_T }*/
+void string_expression() {}
+
+/*3.3.2 FIRST(<string expression’>) = { Ɛ , SCC_OP_T}*/
+void string_expression_prime() {}
+
+/*3.3.2 FIRST(<primary string expression>) = { SVID_T, STR_T }*/
+void primary_string_expression() {}
+
+/*3.3.3 FIRST(<conditional expression>) ={FIRST(<logical OR expression>)}
+                                        = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
+void conditional_expression() {}
+
+/*3.3.3 FIRST(<logical OR expression>) = {FIRST(<logical AND expression)}
+                                       = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
+void logical_OR_expression() {}
+
+/*3.3.3 FIRST(<logical OR expression’>) = { Ɛ, LOG_OP_T(OR)}*/
+void logical_OR_expression_prime() {}
+
+/*3.3.3 FIRST(<logical AND expression>) ={FIRST(<relational expression>)}
+										= { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
+void logical_AND_expression() {}
+
+/*3.3.3 FIRST(<logical AND expression’>) = {Ɛ, LOG_OP_T(AND)}*/
+void logical_AND_expression_prime() {}
+
+/*3.3.4 FIRST(<relational expression>) = { FIRST(<primary a_relational expression>),FIRST(primary s_relational expression>) }
+                                       = { AVID_T, FPL_T, INL_T, SVID_T, STR_T }*/
+void relational_expression() {}
+
+/*3.3.4 FIRST(<primary a_relational expression>) = { AVID_T, FPL_T, INL_T }*/
+void primary_a_relational_expression() {}
+
+/*3.3.4 FIRST(<primary a_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }*/
+void primary_a_relational_expression_prime() {}
+/*3.3.4 FIRST(<primary s_relational expression>) = { STR_T, SVID_T }*/
+void primary_s_relational_expression() {}
+
+/*3.3.4 FIRST(<primary s_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }*/
+void primary_s_relational_expression_prime() {}
