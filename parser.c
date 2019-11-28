@@ -221,34 +221,139 @@ void program() {
 		gen_incode("PLATY: Program parsed");
 }
 
-/*3.1 FIRST(<opt_statements>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE)}*/
-void opt_statements() {}
+/*3.1 FIRST(<opt_statements>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), KW_T(WRITE)}*/
+/* FIRST(<opt_statements>)={AVID_T,SVID_T,KW_T(see above),e} */
+void opt_statements() {
+	switch (lookahead.code) {
+	case AVID_T:
+	case SVID_T: statements(); break;
+	case KW_T:
+		/* check for IF,WHILE,READ,WRITE and in statements_p()*/
+		if (lookahead.attribute.get_int == IF
+			|| lookahead.attribute.get_int == WHILE
+			|| lookahead.attribute.get_int == READ
+			|| lookahead.attribute.get_int == WRITE) {
+			statements();
+			break;
+		}
+	default: /*empty string – optional statements*/;
+		gen_incode("PLATY: Opt_statements parsed");
+	}
+}
 
-/*3.1 FIRST(<statements>) = { AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ), KW_T(WRITE) }*/
-void statements() {}
+/*3.1 FIRST(<statements>) = { AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), KW_T(WRITE) }*/
+void statements() {
+	statement();
+	statements_prime();
+}
 
-/*3.1 FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(USING), KW_T(READ),            KW_T(WRITE)}*/
-void statements_prime() {}
+/*3.1 FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), KW_T(WRITE)}*/
+void statements_prime() {
+}
 
 
 /*3.2 FIRST(<statement>) = { AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), */
-void statement() {}
+void statement() {
+	switch (lookahead.code) {
+	case AVID_T:
+	case SVID_T:
+		assign_expression();
+		break;
+	case KW_T:
+		if (lookahead.attribute.kwt_idx == IF) {
+			selection_statement();
+		}
+		else if (lookahead.attribute.kwt_idx == WHILE) {
+			iteration_statement();
+		}
+		else if (lookahead.attribute.kwt_idx == READ) {
+			input_statement();
+		}
+		else if (lookahead.attribute.kwt_idx == WRITE) {
+			output_statement();
+		}
+		else {
+			syn_printe();
+		}
+		break;
+	default:
+		syn_printe();
+	}
+}
 /*3.2.1FIRST(<assignment statement>) = { FIRST(<assignment expression>) }
 									 = { AVID_T, SVID_T }*/
-void assign_statement() {}
+void assign_statement() {
+	assign_expression();
+	match(EOS_T, NO_ATTR);
+	gen_incode("PLATY: Assignment statement parsed\n");
+}
 
 /*3.2.1 FIRST(<assignment expression>) = { AVID_T, SVID_T } */
-void assign_expression() {}
+void assign_expression() {
+	switch (lookahead.code) {
+	case AVID_T:
+		match(AVID_T, NO_ATTR);
+		match(ASS_OP_T, EQ);
+		arithmetic_expression();
+		gen_incode("PLATY: Assignment expression 'arithmetic' parsed");
+		break;
+	case SVID_T:
+		match(SVID_T, NO_ATTR);
+		match(ASS_OP_T, EQ);
+		string_expression();
+		gen_incode("PLATY: Assignment expression 'string' parsed");
+		break;
+	default:
+		syn_printe();
+		return;
+	}
+}
 
 
 /*3.2.1 FIRST(<selection statement>) = {KW_T(IF)}*/
-void selection_statement(){}
+void selection_statement(){
+	match(KW_T, IF);
+	match(KW_T, TRUE);
+	match(LPR_T, NO_ATTR);
+	conditional_expression();
+	match(RPR_T, NO_ATTR);
+	match(KW_T, THEN);
+	opt_statements();
+	match(KW_T, ELSE);
+	match(LBR_T, NO_ATTR);
+	opt_statements();
+	match(RBR_T, NO_ATTR);
+	match(EOS_T, NO_ATTR);
+	gen_incode("PLATY: IF statement parsed");
+}
 
 /*3.2.3 FIRST(<iteration statement>) = { KW_T(WHILE) }*/
-void iteration_statement(){}
+void iteration_statement(){
+	match(KW_T, WHILE);
+	match(LPR_T, NO_ATTR);
+	assign_expression();
+	match(COM_T, NO_ATTR);
+	conditional_expression();
+	match(COM_T, NO_ATTR);
+	assign_expression();
+	match(RBR_T, NO_ATTR);
+	match(KW_T, REPEAT);
+	match(LPR_T, NO_ATTR);
+	opt_statements();
+	match(RBR_T, NO_ATTR);
+	match(EOS_T, NO_ATTR);
+	gen_incode("PLATY: WHILE statement parsed");
+}
 
 /*3.2.4 FIRST(<iteration statement>) = { KW_T(WHILE) } */
-void input_statement() {}
+void input_statement(void) {
+	match(KW_T, READ); 
+	match(LPR_T, NO_ATTR); 
+	variable_list();
+	match(RPR_T, NO_ATTR); 
+	match(EOS_T, NO_ATTR);
+	gen_incode("PLATY: Input statement parsed");
+}
 
 
 /*3.2.4 FIRST(<variables list>) = { FIRST(<variable identifier>) }

@@ -32,7 +32,7 @@ extern Token malar_next_token();
 #define THEN 5 /*then keyword*/
 #define TRUE 6 /*true keyword*/
 #define WHILE 7 /*while keyword*/
-#define WRTIE 8 /*wrtie keyword*/
+#define WRITE 8 /*wrtie keyword*/
 
 
 /*function declaration*/
