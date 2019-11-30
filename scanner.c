@@ -137,6 +137,7 @@ Token malar_next_token(void) {
 		/*Switch case to find language syntax*/
 		switch (c) {
 		case SEOF:
+		case S_EOF:
 			t.code = SEOF_T;
 			t.attribute.seof = SEOF_0;
 			return t;
@@ -199,6 +200,7 @@ Token malar_next_token(void) {
 				t.attribute.err_lex[0] = '!';
 				t.attribute.err_lex[1] = c;
 				t.attribute.err_lex[2] = '\0';
+				return t;
 			}
 			while (c != NL) { /* Loop through and ignore the entire line*/
 				c = b_getc(sc_buf);
@@ -209,10 +211,9 @@ Token malar_next_token(void) {
 					return t;
 				}
 			}
+			
 			line++;/* increment line */
 			
-			if (c != '!') return t;
-
 			/*ignore comment*/
 			continue;
 			

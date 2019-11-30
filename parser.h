@@ -25,13 +25,15 @@ extern Token malar_next_token();
 /*Keyword constants Note: values match the table index*/
 #define NO_ATTR -1/*Token with no attribute*/
 #define ELSE 0  /*ELSE KEYWORD*/
-#define IF 1   /*IF keyword*/
-#define PLATYPUS 2 /*PLATYPUS from the keyword table*/
-#define READ 3 /*READ KEYWORD*/
-#define REPEAT 4 /*REPEAT keyword*/
-#define THEN 5 /*then keyword*/
-#define WHILE 7 /*while keyword*/
-#define WRITE 8 /*wrtie keyword*/
+#define FALSE 1
+#define IF 2   /*IF keyword*/
+#define PLATYPUS 3 /*PLATYPUS from the keyword table*/
+#define READ 4 /*READ KEYWORD*/
+#define REPEAT 5 /*REPEAT keyword*/
+#define THEN 6 /*then keyword*/
+#define TRUE 7 /* true keyword */
+#define WHILE 8 /*while keyword*/
+#define WRITE 9 /*wrtie keyword*/
 
 
 /*function declaration*/

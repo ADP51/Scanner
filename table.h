@@ -25,6 +25,7 @@ Function List:
   *    '\0' or one of 255,0xFF,EOF
   */
 #define SEOF '\0'
+#define S_EOF (unsigned char)255
 
 #define NL  '\n'
 #define ES  11 /* Error state  with no retract */

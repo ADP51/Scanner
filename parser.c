@@ -89,6 +89,13 @@ void match(int pr_token_code, int pr_token_attribute) {
 		no SEOF match
 	***********************/
 
+	/*if match is unsuccessful*/
+	if (lookahead.code != pr_token_code) {
+		/*error handling function*/
+		syn_eh(pr_token_code);
+		return;
+	}
+
 	/*advance to next token*/
 	lookahead = malar_next_token();
 
@@ -102,12 +109,7 @@ void match(int pr_token_code, int pr_token_attribute) {
 		synerrno++;
 		return;
 	}
-	/*if match is unsuccessful*/
-	if (lookahead.code != pr_token_code) {
-		/*error handling function*/
-		syn_eh(pr_token_code);
-		return;
-	}
+
 }
 /**************************************************************************************************************
 										   FUNCTION HEADER
@@ -337,23 +339,22 @@ of FIRST set.
 GRAMMAR-> 3.1 ------->FIRST(<statements’>) = {Ɛ, AVID_T, SVID_T, KW_T(IF), KW_T(WHILE), KW_T(READ), KW_T(WRITE)}
 ****************************************************************************************************************/
 void statements_prime() {
-
 	switch (lookahead.code) {
-	case AVID_T:/*Arithmetic variable identifier*/
-	case SVID_T:/*String variable identifier*/
-		statement();/*call statement FIRST set string/arr variable identifier*/
-		statements_prime();/*recursive call*/
-	case KW_T:
-		/*check for if while read write*/
-		if (lookahead.attribute.get_int == IF
-			|| lookahead.attribute.get_int == WHILE
-			|| lookahead.attribute.get_int == READ
-			|| lookahead.attribute.get_int == WRITE) {
-			statements();
+	case KW_T:	
+		switch (lookahead.attribute.kwt_idx) {
+		case PLATYPUS:
+		case ELSE:
+		case THEN:
+		case REPEAT:
+			return;
+		default:
 			break;
 		}
-	default: /* empty string possible*/;
-		gen_incode("PLATY: Opt_statements parsed");
+	case AVID_T:
+	case SVID_T: /* AVID_T, AVID_T cases */
+		statement();	/* statements */
+		statements_prime();	/* statements' */
+		break;
 	}
 }
 /**************************************************************************************************************
@@ -373,7 +374,7 @@ void statement() {
 	switch (lookahead.code) {
 	case AVID_T:
 	case SVID_T:
-		assign_expression();
+		assign_statement();
 		break;
 	case KW_T:
 		if (lookahead.attribute.kwt_idx == IF) {
@@ -414,7 +415,7 @@ GRAMMAR-> 3.2.1 ------->FIRST(<assignment statement>) = { FIRST(<assignment expr
 void assign_statement() {
 	assign_expression();
 	match(EOS_T, NO_ATTR);
-	gen_incode("PLATY: Assignment statement parsed\n");
+	gen_incode("PLATY: Assignment statement parsed");
 }
 /**************************************************************************************************************
 										   FUNCTION HEADER
@@ -435,13 +436,13 @@ void assign_expression() {
 		match(AVID_T, NO_ATTR);
 		match(ASS_OP_T, EQ);
 		arithmetic_expression();
-		gen_incode("PLATY: Assignment expression 'arithmetic' parsed");
+		gen_incode("PLATY: Assignment expression (arithmetic) parsed");
 		break;
 	case SVID_T:
 		match(SVID_T, NO_ATTR);
 		match(ASS_OP_T, EQ);
 		string_expression();
-		gen_incode("PLATY: Assignment expression 'string' parsed");
+		gen_incode("PLATY: Assignment expression (string) parsed");
 		break;
 	default:
 		syn_printe();
@@ -463,19 +464,35 @@ GRAMMAR-> 3.2.2 -------> FIRST(<selection statement>) = {KW_T(IF)}
 ****************************************************************************************************************/
 void selection_statement(){
 	match(KW_T, IF);
-	//pre-condition
+	if (lookahead.code == KW_T) {
+		if (lookahead.attribute.kwt_idx == TRUE) {
+			match(KW_T, TRUE);
+		}
+		else if (lookahead.attribute.kwt_idx == FALSE) {
+			match(KW_T, FALSE);
+		}
+		else {
+			syn_printe();
+		}	
+	}
+	else {
+		syn_printe();
+	}
 	match(LPR_T, NO_ATTR);
 	conditional_expression();
 	match(RPR_T, NO_ATTR);
 	match(KW_T, THEN);
+	match(LBR_T, NO_ATTR);
 	opt_statements();
+	match(RBR_T, NO_ATTR);
 	match(KW_T, ELSE);
 	match(LBR_T, NO_ATTR);
 	opt_statements();
 	match(RBR_T, NO_ATTR);
 	match(EOS_T, NO_ATTR);
-	gen_incode("PLATY: IF statement parsed");
+	gen_incode("PLATY: Selection statement parsed");
 }
+
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: iteration_statement
@@ -491,19 +508,29 @@ GRAMMAR-> 3.2.3 -------> FIRST(<iteration statement>) = { KW_T(WHILE) }
 ****************************************************************************************************************/
 void iteration_statement(){
 	match(KW_T, WHILE);
+	if (lookahead.code == KW_T) {
+		if (lookahead.attribute.kwt_idx == TRUE) {
+			match(KW_T, TRUE);
+		}
+		else if (lookahead.attribute.kwt_idx == FALSE) {
+			match(KW_T, FALSE);
+		}
+		else {
+			syn_printe();
+		}
+	}
+	else {
+		syn_printe();
+	}
 	match(LPR_T, NO_ATTR);
-	assign_expression();
-	match(COM_T, NO_ATTR);
 	conditional_expression();
-	match(COM_T, NO_ATTR);
-	assign_expression();
-	match(RBR_T, NO_ATTR);
+	match(RPR_T, NO_ATTR);
 	match(KW_T, REPEAT);
-	match(LPR_T, NO_ATTR);
-	opt_statements();
+	match(LBR_T, NO_ATTR);
+	statements();
 	match(RBR_T, NO_ATTR);
 	match(EOS_T, NO_ATTR);
-	gen_incode("PLATY: WHILE statement parsed");
+	gen_incode("PLATY: Iteration statement parsed");
 }
 /**************************************************************************************************************
 										   FUNCTION HEADER
@@ -716,6 +743,7 @@ void arithmetic_expression() {
 
 	default :
 		syn_printe();
+		return;
 	}
 }
 /**************************************************************************************************************
@@ -749,7 +777,9 @@ void unary_arithmetic_expression() {
 		
 		break;
 
-	default: break; 
+	default: 
+		syn_printe();
+		break; 
 	}
 	gen_incode("PLATY: Unary arithmetic expression parsed");
 }
@@ -797,12 +827,15 @@ void additive_arthmetic_expression_prime() {
 			match(ART_OP_T, MINUS);/*match with arithmetic operator token and attribut*/
 			multiplicative_arithmetic_expression();/*multiplicative_arithmetic_expression*/
 			additive_arthmetic_expression_prime();/*recursion*/
-		/*Error*/
 		}
-		else
-			syn_printe();/*Error print*/
+		else {
+			return;
+		}
 		break;
+	default:
+		return;
 	}
+	gen_incode("PLATY: Additive arithmetic expression parsed");
 }
 /**************************************************************************************************************
 										   FUNCTION HEADER
@@ -887,6 +920,9 @@ void primary_arithmetic_expression() {
 		arithmetic_expression();
 		match(RPR_T, NO_ATTR);/*closing bracket match expression finished*/
 		break;
+	default:
+		syn_printe();
+		return;
 	}
 	gen_incode("PLATY: Primary arithmetic expression parsed");
 
@@ -957,7 +993,7 @@ void primary_string_expression() {
 		match(STR_T, NO_ATTR);
 		break;
 	}
-	gen_incode("PLATY: string expression parsed!");
+	gen_incode("PLATY: Primary string expression parsed");
 }
 
 /**************************************************************************************************************
@@ -975,7 +1011,7 @@ GRAMMAR-> 3.3.3 FIRST(<conditional expression>) ={FIRST(<logical OR expression>)
 ****************************************************************************************************************/
 void conditional_expression() {
 	logical_OR_expression();
-	gen_incode("PLATY: Conditional expression parsed!");
+	gen_incode("PLATY: Conditional expression parsed");
 }
 
 /**************************************************************************************************************
@@ -1197,7 +1233,7 @@ void primary_s_relational_expression() {
 
 	primary_string_expression();
 
-	gen_incode("PLATY: Primary s_relational expression parsed!");
+	gen_incode("PLATY: Primary s_relational expression parsed");
 }
 
 /**************************************************************************************************************
