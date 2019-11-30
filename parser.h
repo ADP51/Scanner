@@ -30,7 +30,6 @@ extern Token malar_next_token();
 #define READ 3 /*READ KEYWORD*/
 #define REPEAT 4 /*REPEAT keyword*/
 #define THEN 5 /*then keyword*/
-#define TRUE 6 /*true keyword*/
 #define WHILE 7 /*while keyword*/
 #define WRITE 8 /*wrtie keyword*/
 
@@ -60,6 +59,7 @@ void variable_identifier(); /*3.2.4 FIRST(<variable identifier>) = {AVID_T,SVID_
 void output_statement(); /*3.2.5 FIRST(<output statement>) = { KW_T(WRITE) }*/
 void output_list(); /*3.2.5 FIRST(<output list>)  = {FIRST(<variable list>)} = {Ɛ, AVID_T, SVID_T, STR_T}*/
 void arithmetic_expression();/*3.3.1 FIRST(<arithmetic expression>) = { FIRST(<unary arithmetic expression>,FIRST(<additive arithmetic expression>)} = { -, +, AVID_T, FPL_T, INL_T, ( }*/
+void unary_arithmetic_expression();
 void additive_arithmetic_expression(); /*3.3.1 FIRST(<additive arithmetic expression>) ={FIRST(<multiplicative arithmetic expression>)} = { AVID_T, FPL_T, INL_T, LPR_T }*/
 void additive_arthmetic_expression_prime(); /*FIRST(<additive arithmetic expression’>) = { Ɛ, ART_OP_T(-), ART_OP_T(+)}*/
 void multiplicative_arithmetic_expression();/*FIRST(<multiplicative arithmetic expression>) = { FIRST(<primary arithmetic  expression>)} = {Ɛ, ART_OP_T(DIV), ART_OP_T(MULT)}*/

@@ -463,7 +463,7 @@ GRAMMAR-> 3.2.2 -------> FIRST(<selection statement>) = {KW_T(IF)}
 ****************************************************************************************************************/
 void selection_statement(){
 	match(KW_T, IF);
-	match(KW_T, TRUE);
+	//pre-condition
 	match(LPR_T, NO_ATTR);
 	conditional_expression();
 	match(RPR_T, NO_ATTR);
@@ -577,7 +577,7 @@ void variable_list_prime() {
 		match(COM_T, NO_ATTR);
 		/*recursion*/
 		variable_identifier();
-		variable_list_p();
+		variable_list_prime();
 	}
 }
 /**************************************************************************************************************
@@ -889,48 +889,356 @@ void primary_arithmetic_expression() {
 		break;
 	}
 	gen_incode("PLATY: Primary arithmetic expression parsed");
+
 }
 
-/*3.3.2 FIRST(<string expression>) ={FIRST(<primary string expression>)} = { SVID_T, STR_T }*/
-void string_expression() {}
+/**************************************************************************************************************
+										   FUNCTION HEADER
+Function Name: string_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function:primary_string_expression(),string_expression_prime()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <string_expression>  non terminal using the principle
+of FIRST set.
 
-/*3.3.2 FIRST(<string expression’>) = { Ɛ , SCC_OP_T}*/
-void string_expression_prime() {}
+GRAMMAR-> 3.3.2 FIRST(<string expression>) ={<primary string expression><string expression’> | E} = { SVID_T, STR_T, Ɛ, SCC_OP_T }
+****************************************************************************************************************/
+void string_expression() {
+	primary_string_expression();
+	string_expression_prime();
+}
 
-/*3.3.2 FIRST(<primary string expression>) = { SVID_T, STR_T }*/
-void primary_string_expression() {}
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: string_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: match(), primary_string_expression(), string_expression_prime(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <string_expression_prime>  non terminal using the principle
+of FIRST set.
 
-/*3.3.3 FIRST(<conditional expression>) ={FIRST(<logical OR expression>)}
-										= { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
-void conditional_expression() {}
+GRAMMAR-> 3.3.2 FIRST(<string expression’>) = { Ɛ , SCC_OP_T}
+****************************************************************************************************************/
+void string_expression_prime() {
+	switch (lookahead.code) {
+	case SCC_OP_T:
+		match(SCC_OP_T, NO_ATTR);
+		primary_string_expression();
+		string_expression_prime();
+		break;
+	default:
+		gen_incode("PLATY: String expression parsed");
+	}
+}
 
-/*3.3.3 FIRST(<logical OR expression>) = {FIRST(<logical AND expression)}
-									   = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
-void logical_OR_expression() {}
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: primary_string_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: match(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <primary_string_expression>  non terminal using the principle
+of FIRST set.
 
-/*3.3.3 FIRST(<logical OR expression’>) = { Ɛ, LOG_OP_T(OR)}*/
-void logical_OR_expression_prime() {}
+GRAMMAR-> 3.3.2 FIRST(<primary string expression>) = { SVID_T, STR_T }
+****************************************************************************************************************/
+void primary_string_expression() {
+	switch (lookahead.code) {
+	case SVID_T:
+		match(SVID_T, NO_ATTR);
+		break;
+	case STR_T:
+		match(STR_T, NO_ATTR);
+		break;
+	}
+	gen_incode("PLATY: string expression parsed!");
+}
 
-/*3.3.3 FIRST(<logical AND expression>) ={FIRST(<relational expression>)}
-										= { STR_T, SVID_T, AVID_T, FPL_T, INL_T }*/
-void logical_AND_expression() {}
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: conditional_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: logical_OR_expression(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <conditional_expression>  non terminal using the principle
+of FIRST set.
 
-/*3.3.3 FIRST(<logical AND expression’>) = {Ɛ, LOG_OP_T(AND)}*/
-void logical_AND_expression_prime() {}
+GRAMMAR-> 3.3.3 FIRST(<conditional expression>) ={FIRST(<logical OR expression>)} = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }
+****************************************************************************************************************/
+void conditional_expression() {
+	logical_OR_expression();
+	gen_incode("PLATY: Conditional expression parsed!");
+}
 
-/*3.3.4 FIRST(<relational expression>) = { FIRST(<primary a_relational expression>),FIRST(primary s_relational expression>) }
-									   = { AVID_T, FPL_T, INL_T, SVID_T, STR_T }*/
-void relational_expression() {}
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: logical_OR_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: logical_AND_expression(), logical_OR_expression_prime()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <logical_OR_expression>  non terminal using the principle
+of FIRST set.
 
-/*3.3.4 FIRST(<primary a_relational expression>) = { AVID_T, FPL_T, INL_T }*/
-void primary_a_relational_expression() {}
+GRAMMAR-> 3.3.3 FIRST(<logical OR expression>) = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }
+****************************************************************************************************************/
+void logical_OR_expression() {
+	logical_AND_expression();
+	logical_OR_expression_prime();
+}
 
-/*3.3.4 FIRST(<primary a_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }*/
-void primary_a_relational_expression_prime() {}
-/*3.3.4 FIRST(<primary s_relational expression>) = { STR_T, SVID_T }*/
-void primary_s_relational_expression() {}
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: logical_OR_expression_prime
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: logical_AND_expression(), logical_OR_expression, match(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <logical_OR_expression_prime>  non terminal using the principle
+of FIRST set.
 
-/*3.3.4 FIRST(<primary s_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }*/
+GRAMMAR-> 3.3.3 FIRST(<logical OR expression’>) = { Ɛ, LOG_OP_T(OR)}
+****************************************************************************************************************/
+void logical_OR_expression_prime() {
+	if (lookahead.code == LOG_OP_T) {
+		if (lookahead.attribute.log_op == AND) {
+			return;
+		}
+
+		match(LOG_OP_T, OR);
+		logical_AND_expression();
+		logical_OR_expression();
+		gen_incode("PLATY: Logical OR expression parsed!");
+	}
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: logical_AND_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: relational_expression(), logical_AND_expression_prime();
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <logical_AND_expression>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.3 FIRST(<logical AND expression>) = { STR_T, SVID_T, AVID_T, FPL_T, INL_T }
+****************************************************************************************************************/
+void logical_AND_expression() {
+	relational_expression();
+	logical_AND_expression_prime();
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: logical_AND_expression_prime
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: logical_AND_expression_prime(), relational_expression(), match(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <logical_AND_expression_prime>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.3 FIRST(<logical AND expression’>) = {Ɛ, LOG_OP_T(AND)}}
+****************************************************************************************************************/
+void logical_AND_expression_prime() {
+	if (lookahead.code == LOG_OP_T) {
+		if (lookahead.attribute.log_op == AND) {
+			match(LOG_OP_T, AND);
+			relational_expression();
+			logical_AND_expression_prime();
+			gen_incode("PLATY: Logical AND expression parsed!");
+		}	
+	}
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: relational_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: primary_a_relational_expression(), primary_a_relational_expression_prime(), primary_s_relational_expression(), primary_s_relational_expression_prime(), syn_printe(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <relational_expression>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.4 FIRST(<relational expression>) = { FIRST(<primary a_relational expression>),FIRST(primary s_relational expression>) } = { AVID_T, FPL_T, INL_T, SVID_T, STR_T }
+****************************************************************************************************************/
+void relational_expression() {
+	switch (lookahead.code) {
+	case AVID_T:
+	case FPL_T:
+	case INL_T:
+		primary_a_relational_expression();
+		primary_a_relational_expression_prime();
+		break;
+	case SVID_T:
+	case STR_T:
+		primary_s_relational_expression();
+		primary_s_relational_expression_prime();
+		break;
+	default:
+		syn_printe();
+	}
+	gen_incode("PLATY: Relational expression parsed");
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: primary_a_relational_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: match(), syn_printe(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <primary_a_relational_expression>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.4 FIRST(<primary a_relational expression>) = { AVID_T, FPL_T, INL_T }
+****************************************************************************************************************/
+void primary_a_relational_expression() {
+	switch (lookahead.code) 
+	{
+	case AVID_T:
+		match(AVID_T, NO_ATTR);
+		break;
+	case FPL_T:
+		match(FPL_T, NO_ATTR);
+		break;
+	case INL_T:
+		match(INL_T, NO_ATTR);
+		break;
+	default:
+		syn_printe();
+		break;
+	}
+	gen_incode("PLATY: Primary a_relational expression parsed");
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: primary_a_relational_expression_prime
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: primary_a_relational_expression(), match(), syn_printe()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <primary_a_relational_expression_prime>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.4 FIRST(<primary a_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }
+****************************************************************************************************************/
+void primary_a_relational_expression_prime() {
+	switch (lookahead.code) 
+	{
+	case REL_OP_T:
+		if (lookahead.attribute.rel_op == EQ) {
+			match(REL_OP_T, EQ);
+			primary_a_relational_expression();
+		}
+		else if (lookahead.attribute.rel_op == NE) {
+			match(REL_OP_T, NE);
+			primary_a_relational_expression();
+		} 
+		else if (lookahead.attribute.rel_op == GT) {
+			match(REL_OP_T, GT);
+			primary_a_relational_expression();
+		}
+		else if (lookahead.attribute.rel_op == LT) {
+			match(REL_OP_T, LT);
+			primary_a_relational_expression();
+		}
+		else {
+			syn_printe();
+		}
+		break;
+	default:
+		syn_printe();
+		break;
+	}
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: primary_s_relational_expression
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: match(), primary_string_expression(), gen_incode()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <primary_s_relational_expression>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.4 FIRST(<primary s_relational expression>) = { STR_T, SVID_T }
+****************************************************************************************************************/
+void primary_s_relational_expression() {
+	switch (lookahead.code) 
+	{
+	case STR_T:
+		match(STR_T, NO_ATTR);
+		break;
+	case SVID_T:
+		match(SVID_T, NO_ATTR);
+		break;
+	}
+
+	primary_string_expression();
+
+	gen_incode("PLATY: Primary s_relational expression parsed!");
+}
+
+/**************************************************************************************************************
+FUNCTION HEADER
+Function Name: primary_s_relational_expression_prime
+Author: Johnathon Cameron and Andrew Palmer
+History/Version: 1.0
+Called Function: match(), primary_s_relational_expression(), syn_printe()
+Parameters: none
+Return:  none
+Algorithm:Checks : Function performs the production rules from <primary_s_relational_expression_prime>  non terminal using the principle
+of FIRST set.
+
+GRAMMAR-> 3.3.4 FIRST(<primary s_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }
+****************************************************************************************************************/
 void primary_s_relational_expression_prime() {
-	
+	switch (lookahead.code)
+	{
+	case REL_OP_T:
+		if (lookahead.attribute.rel_op == EQ) {
+			match(REL_OP_T, EQ);
+			primary_s_relational_expression();
+		}
+		else if (lookahead.attribute.rel_op == NE) {
+			match(REL_OP_T, NE);
+			primary_s_relational_expression();
+		}
+		else if (lookahead.attribute.rel_op == GT) {
+			match(REL_OP_T, GT);
+			primary_s_relational_expression();
+		}
+		else if (lookahead.attribute.rel_op == LT) {
+			match(REL_OP_T, LT);
+			primary_s_relational_expression();
+		}
+		else {
+			syn_printe();
+		}
+		break;
+	default:
+		syn_printe();
+		break;
+	}
 }

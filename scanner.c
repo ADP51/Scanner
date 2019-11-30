@@ -603,7 +603,6 @@ Token aa_func10(char lexeme[]) {
 	Token t;
 	/*counter variable*/
 	unsigned int i;
-	short counter = 0;
 	/*Set token attribute to head of str table using b_limit*/
 	t.attribute.str_offset = b_limit(str_LTBL);
 
