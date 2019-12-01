@@ -671,7 +671,7 @@ Token aa_func12(char lexeme[]) {
 	/*If lexeme is shorter then ERR_LEN (20 char) */
 	unsigned int j = 0;
 
-	for (j = 0; j < ERR_LEN; j++) {
+	for (j = 0; j < strlen(lexeme); j++) {
 		/*nl check*/
 		if (lexeme[j] == '\n') line++;
 		t.attribute.err_lex[j] = lexeme[j];

@@ -1054,7 +1054,7 @@ void logical_OR_expression_prime() {
 		match(LOG_OP_T, OR);
 		logical_AND_expression();
 		logical_OR_expression();
-		gen_incode("PLATY: Logical OR expression parsed!");
+		gen_incode("PLATY: Logical OR expression parsed");
 	}
 }
 
@@ -1095,7 +1095,7 @@ void logical_AND_expression_prime() {
 			match(LOG_OP_T, AND);
 			relational_expression();
 			logical_AND_expression_prime();
-			gen_incode("PLATY: Logical AND expression parsed!");
+			gen_incode("PLATY: Logical AND expression parsed");
 		}	
 	}
 }
