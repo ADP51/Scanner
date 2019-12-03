@@ -80,4 +80,5 @@ void primary_a_relational_expression(); /*3.3.4 FIRST(<primary a_relational expr
 void primary_a_relational_expression_prime(); /*3.3.4 FIRST(<primary a_relational expression’>) = { REL_OP_T(EQ), REL_OP_T(NE), REL_OP_T(GT), REL_OP_T(LT) }*/
 void primary_s_relational_expression(); /*3.3.4 FIRST(<primary s_relational expression’>) = { STR_T, SVID_T }*/
 void primary_s_relational_expression_prime(); 
+void pre_condition();
 #endif

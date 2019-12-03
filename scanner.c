@@ -139,14 +139,15 @@ Token malar_next_token(void) {
 		case SEOF:
 		case S_EOF:
 			t.code = SEOF_T;
-			t.attribute.seof = SEOF_0;
+			t.attribute.seof = SEOF_EOF;
 			return t;
+
+		case NL: /* Check for New Line */
+			line++; /* increment line number */
+			continue;
 		case ' ':
 			continue; /* If char is whitespace ignore and continue */
 		case '\t':
-			continue;
-		case NL: /* Check for New Line */
-			line++; /* increment line number */
 			continue;
 		case '=':
 			c = b_getc(sc_buf); /* get the next char */
@@ -205,9 +206,9 @@ Token malar_next_token(void) {
 			while (c != NL) { /* Loop through and ignore the entire line*/
 				c = b_getc(sc_buf);
 				/*Check for End of File after comments*/
-				if (c == SEOF) {
+				if (c == SEOF ) {
 					t.code = SEOF_T;
-					t.attribute.seof = SEOF_0;
+					t.attribute.seof = SEOF_EOF;
 					return t;
 				}
 			}
@@ -250,13 +251,13 @@ Token malar_next_token(void) {
 			  /*Check for AND*/
 			if (c == 'A' && b_getc(sc_buf) == 'N' && b_getc(sc_buf) == 'D' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;/*Logical operator token*/
-				t.attribute.rel_op = AND;/* AND value*/
+				t.attribute.log_op = AND;/* AND value*/
 				return t;
 				/*Check for OR*/
 			}
 			else if (c == 'O' && b_getc(sc_buf) == 'R' && b_getc(sc_buf) == '.') {
 				t.code = LOG_OP_T;/*Logical operator token*/
-				t.attribute.rel_op = OR;/* AND value*/
+				t.attribute.log_op = OR;/* AND value*/
 				return t;
 				/*Return Error if none are found*/
 			}else {
@@ -604,6 +605,10 @@ Token aa_func10(char lexeme[]) {
 	Token t;
 	/*counter variable*/
 	unsigned int i;
+
+	/*SET the token code to STR_T Token*/
+	t.code = STR_T;
+
 	/*Set token attribute to head of str table using b_limit*/
 	t.attribute.str_offset = b_limit(str_LTBL);
 
@@ -613,15 +618,16 @@ Token aa_func10(char lexeme[]) {
 		if (lexeme[i] != '"')
 			b_addc(str_LTBL, lexeme[i]);
 
+		
 		/*if new line character is found */
 		if (lexeme[i] == '\n')
 			line++;
+
 	}
 	/*adding \0 to make the String c Type String*/
 	b_addc(str_LTBL, '\0');
 
-	/*SET the token code to STR_T Token*/
-	t.code = STR_T;
+
 	return t;
 }
 
@@ -653,14 +659,18 @@ Token aa_func12(char lexeme[]) {
 	if (strlen(lexeme) > ERR_LEN) {
 		int i = 0;
 
-		/*Assigning lexeme characters to t.attribute.err_lex within for loop and assigning the last 3 char ...*/
-		for (i = 0; i < ERR_LEN - 3; i++) {
-			/*if new line character is found*/
-			if (lexeme[i] == '\n') line++;
-			/*adding characters to err_lex*/
-			t.attribute.err_lex[i] = lexeme[i];
+		/*search through the entire lexeme but only put the characters up to ERR_LEN -3*/
+		for (i = 0; i < strlen(lexeme); i++) {
+			if (lexeme[i] == NL) line++;
+
+			if (i != ERR_LEN - 3) {
+				t.attribute.err_lex[i] = lexeme[i];
+			}
+			
+
 		}
-		/* assign the last three chars to err_lex ...*/
+
+		/*Fil the 4 remaining positions in err_lex*/
 		t.attribute.err_lex[ERR_LEN - 3] = '.';
 		t.attribute.err_lex[ERR_LEN - 2] = '.';
 		t.attribute.err_lex[ERR_LEN - 1] = '.';

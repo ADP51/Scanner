@@ -36,6 +36,7 @@ void parser() {
 	/*print out successful parse*/
 	gen_incode("PLATY: Source file parsed");
 }
+
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: match
@@ -53,9 +54,15 @@ Algorithm:Checks :
 	the token code is matched only
 ****************************************************************************************************************/
 void match(int pr_token_code, int pr_token_attribute) {
-
+	
+	/*if match is unsuccessful*/
+	if (lookahead.code != pr_token_code) {
+		/*error handling function*/
+		syn_eh(pr_token_code);
+		return;
+	}
 	/*if lookahead is equal to source end of file*/
-	if (lookahead.code == SEOF_T) return;
+	if (lookahead.code == SEOF_T  ) return;
 
 	/*switch case to verify attribute match with specific code*/
 	switch (pr_token_code) {
@@ -88,13 +95,6 @@ void match(int pr_token_code, int pr_token_attribute) {
 	/**********************
 		no SEOF match
 	***********************/
-
-	/*if match is unsuccessful*/
-	if (lookahead.code != pr_token_code) {
-		/*error handling function*/
-		syn_eh(pr_token_code);
-		return;
-	}
 
 	/*advance to next token*/
 	lookahead = malar_next_token();
@@ -532,6 +532,8 @@ void iteration_statement(){
 	match(EOS_T, NO_ATTR);
 	gen_incode("PLATY: Iteration statement parsed");
 }
+
+
 /**************************************************************************************************************
 										   FUNCTION HEADER
 Function Name: input_statement
@@ -634,6 +636,7 @@ void variable_identifier() {
     /*if its none of the above token, print error*/
 	default : 
 		syn_printe();
+
 		break;
 	}
 }
@@ -1053,7 +1056,7 @@ void logical_OR_expression_prime() {
 
 		match(LOG_OP_T, OR);
 		logical_AND_expression();
-		logical_OR_expression();
+		logical_OR_expression_prime();
 		gen_incode("PLATY: Logical OR expression parsed");
 	}
 }
@@ -1229,7 +1232,10 @@ void primary_s_relational_expression() {
 	case SVID_T:
 		match(SVID_T, NO_ATTR);
 		break;
+	default:
+		syn_printe();
 	}
+	
 
 	primary_string_expression();
 
