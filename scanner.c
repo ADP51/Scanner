@@ -663,11 +663,9 @@ Token aa_func12(char lexeme[]) {
 		for (i = 0; i < strlen(lexeme); i++) {
 			if (lexeme[i] == NL) line++;
 
-			if (i != ERR_LEN - 3) {
+			if (i < ERR_LEN - 3) {
 				t.attribute.err_lex[i] = lexeme[i];
 			}
-			
-
 		}
 
 		/*Fil the 4 remaining positions in err_lex*/
